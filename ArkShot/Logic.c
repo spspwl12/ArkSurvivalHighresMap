@@ -291,7 +291,7 @@ LoadDll(
         // ?EnsureFailed@FDebug@@SAXPEBD0HPEB_W@Z
         if (FDebug_EnsureFailed = GetFunction((HMODULE)DLL, "EnsureFailed@FDebug"))
         {
-            // EnsureFailed 를 막는 이유 : IsInGameThread 결과가 false이기 때문에 외부 프로그램이 Exec 커맨드를 쓰면 ADK 가 오류가 발생해 종료되기 때문입니다.
+            // EnsureFailed 를 막는 이유 : IsInGameThread 결과가 false이기 때문에 외부 프로그램이 Exec 커맨드를 쓰면 ADK에서 오류가 발생해 종료되기 때문입니다.
             // The reason for blocking EnsureFailed: Since the result of IsInGameThread is false, if an external program executes an Exec command, 
             // ADK will encounter an error and terminate.
 
