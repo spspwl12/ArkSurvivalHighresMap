@@ -4,7 +4,7 @@
 아크 서바이벌 이볼브드 (ARK: Survival Evolved) 게임의 맵 지형을 고해상도로 캡처해 주는 프로그램입니다.<br>
 이후 캡처된 이미지는 Leaflet를 이용하여 지도처럼 볼 수 있습니다.<br><br>
 
-이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.<br>
+이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.
 - minhook ( https://github.com/TsudaKageyu/minhook ) => 정적 라이브러리, 언리얼 엔진 함수를 후킹할 떄 쓰입니다.<br>
   
 ## 주요 특징
