@@ -1,6 +1,10 @@
-#include "MinHook.h"
+#include "..\libMinHook\MinHook.h"
 
-#pragma comment(lib, "libMinHook.x64.lib")
+#if defined _DEBUG
+#pragma comment(lib, "..\\Build\\libMinHook.x64d.lib")
+#else
+#pragma comment(lib, "..\\Build\\libMinHook.x64.lib")
+#endif
 
 static int HookCount;
 

@@ -48,6 +48,15 @@ LoadArkEditor(
 {
     cParam.hDlg = (HWND)hDlg;
 
+    DWORD attributes = GetFileAttributes(dllPath);
+
+    if (INVALID_FILE_ATTRIBUTES == attributes ||
+        0 != (attributes & FILE_ATTRIBUTE_DIRECTORY))
+    {
+        MessageBox(hDlg, "Invalid Dll Path.", "Error", MB_ICONEXCLAMATION);
+        return FALSE;
+    }
+
     if (NULL == (cParam.hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pID)))
     {
         MessageBox(hDlg, "OpenProcess() Error", "Error", MB_ICONEXCLAMATION);
@@ -289,6 +298,15 @@ WorkThread(
     strcat_s(BitmapPath, sizeof(BitmapPath), "00001.bmp");
 
     GetDlgItemText(hDlg, IDC_EDIT_SVPATH, SavePath, sizeof(SavePath));
+
+    DWORD attributes = GetFileAttributes(SavePath);
+
+    if (INVALID_FILE_ATTRIBUTES == attributes ||
+        0 == (attributes & FILE_ATTRIBUTE_DIRECTORY))
+    {
+        MessageBox(hDlg, "Invalid Save Path.", "Error", MB_ICONEXCLAMATION);
+        goto EXIT_THREAD;
+    }
 
     Vec2D Coord_To = {
         GetDlgItemFloat(hDlg, IDC_EDIT_X2),
