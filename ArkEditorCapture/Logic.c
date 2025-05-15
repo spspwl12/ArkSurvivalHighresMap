@@ -375,7 +375,7 @@ WorkThread(
 
     {
         POINT xy = { 0 };
-        int cnt = 1;
+        int cnt = 10;
 
         for (;;)
         {
@@ -499,8 +499,11 @@ WorkThread(
     EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_START), TRUE);
     SetWindowText(GetDlgItem(hDlg, IDC_BUTTON_START), "Stop");
 
-    for (long ZoomLvl = Z_to; ZoomLvl <= Z_from; ++ZoomLvl, Zoom /= 2)
+    for (long ZoomLvl = 0; ZoomLvl <= Z_from; ++ZoomLvl, Zoom /= 2)
     {
+        if (ZoomLvl < Z_to)
+            continue;
+
         SetDlgItemInt(hDlg, IDC_WHI_I, ZoomLvl, TRUE);
 
         const float ZoomTile = Zoom * ATOMIC_FN;
@@ -535,8 +538,8 @@ WorkThread(
         sprintf_s(z_string, sizeof(z_string), "%s\\%d", SavePath, ZoomLvl);
         CreateDirectory(z_string, NULL);
 
-        long LimitX = (long)((Coord_From.x - Coord_To.x) / resInc.x + CORRECTION) - 1;
-        long LimitY = (long)((Coord_From.y - Coord_To.y) / resInc.y + CORRECTION) - 1;
+        long LimitX = (long)((Coord_From.x - Coord_To.x) / resInc.x + 0.5) - 1;
+        long LimitY = (long)((Coord_From.y - Coord_To.y) / resInc.y + 0.5) - 1;
 
         if (LimitX < 0)
             LimitX = 0;
@@ -561,9 +564,14 @@ WorkThread(
                 {
                     float fval;
 
-                    fval = (float)(StartCoord.x + Increase.x * x);
+                    const Vec2D rCoord = {
+                        StartCoord.x + Increase.x * x,
+                        StartCoord.y + Increase.y * y
+                    };
+
+                    fval = (float)rCoord.x;
                     memcpy(Buf + 0, &fval, 4);
-                    fval = (float)(StartCoord.y + Increase.y * y);
+                    fval = (float)rCoord.y;
                     memcpy(Buf + 4, &fval, 4);
                     fval = (float)0;
                     memcpy(Buf + 8, &fval, 4);
@@ -600,8 +608,8 @@ WorkThread(
                     }
                     else
                     {
-                        const long cutX = (long)((Coord_From.x - Coord_To.x) / Increase.x + CORRECTION) - 1;
-                        const long cutY = (long)((Coord_From.y - Coord_To.y) / Increase.y + CORRECTION) - 1;
+                        const long cutX = (long)((EndCoord.x - rCoord.x) / Increase.x + 0.5) - 1;
+                        const long cutY = (long)((EndCoord.y - rCoord.y) / Increase.y + 0.5) - 1;
 
                         while (!SaveImageParts(ExtensionIndex,
                             oTileSz, oTileSz,
