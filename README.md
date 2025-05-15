@@ -24,10 +24,10 @@
 ![Animation](https://github.com/user-attachments/assets/3147cc4b-bb18-4b47-984a-1b770e501d3e)
 5. 압축을 풉니다.
 6. ArkEditorCapture.sln 파일을 더블클릭 해 프로젝트를 엽니다.
-7. 플랫폼을 x86 그리고 구성을 Release 로 설정합니다.<br>
-   ![image](https://github.com/user-attachments/assets/e70b6756-e9bb-4013-9f97-88bf58752792)
+7. 플랫폼을 x64 그리고 구성을 Release 로 설정합니다.<br>
+   ![image](https://github.com/user-attachments/assets/e7b9c243-21b0-4f86-b463-1903bd6934d9)
 8. F7를 눌러 컴파일 합니다.
-9. 컴파일이 완료되면, 프로젝트 폴더안의 Build 폴더에 있는 sokoban.exe 를 실행합니다.
+9. 컴파일이 완료되면, 프로젝트 폴더안의 Build 폴더에 있는 ArkEditorCapture.exe 를 실행합니다.
     
 ## 작동 화면
 
