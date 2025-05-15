@@ -3,6 +3,7 @@
 ## 프로젝트 소개
 아크 서바이벌 이볼브드 (ARK: Survival Evolved) 게임의 맵 지형을 고해상도로 캡처해 주는 프로그램입니다.<br>
 이후 캡처된 이미지는 Leaflet를 이용하여 지도처럼 볼 수 있습니다.<br>
+**※ ARK DevKit 이 설치되어있어야 합니다.**
 
 이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.
 - minhook ( https://github.com/TsudaKageyu/minhook ) => 정적 라이브러리, 언리얼 엔진 함수를 후킹할 떄 쓰입니다.<br>
@@ -28,7 +29,8 @@
    ![image](https://github.com/user-attachments/assets/e7b9c243-21b0-4f86-b463-1903bd6934d9)
 8. F7를 눌러 컴파일 합니다.
 9. 컴파일이 완료되면, 프로젝트 폴더안의 Build 폴더에 있는 ArkEditorCapture.exe 를 실행합니다.
-    
+10. ARK DevKit을 실행합니다.
+11. ArkEditorCapture.exe 의 Dll Path 란에 ... 버튼을 눌러 프로젝트 폴더안의 Build 폴더에 있는 ArkShot.dll 를 선택합니다.
 ## 작동 화면
 
 
