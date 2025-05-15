@@ -373,46 +373,61 @@ WorkThread(
     if (TileSize < 256 || TileSize > 16384)
         goto EXIT_THREAD;
 
-    float fval;
-
-    for (;;)
     {
-        while (!RequestMessage(MODE_GET_WH, 8, Buf))
+        POINT xy = { 0 };
+        int cnt = 1;
+
+        for (;;)
         {
-            if (++WaitCount > 10)
+            while (!RequestMessage(MODE_GET_WH, 8, Buf))
+            {
+                if (++WaitCount > 10)
+                    goto EXIT_THREAD;
+
+                Sleep(100);
+            }
+
+            memcpy(&VpWidth, Buf, sizeof(long));
+            memcpy(&VpHeight, Buf + 4, sizeof(long));
+
+            if (xy.x != VpWidth ||
+                xy.y != VpHeight)
+            {
+                if (cnt > 0)
+                    --cnt;
+            }
+            else
+                ++cnt;
+
+            memcpy(&xy, Buf, sizeof(POINT));
+
+            // auto sizing window
+            POINT windowSize = { 256, 256 };
+
+            if (VpWidth == windowSize.x && VpHeight == windowSize.y)
+                break;
+
+            unsigned long pID = GetProcessId(hProcess);
+            HWND unrealhWnd = FindWindowsByPID(pID);
+
+            if (NULL == unrealhWnd)
                 goto EXIT_THREAD;
 
-            Sleep(100);
+            RECT rc;
+            POINT offset = windowSize;
+
+            GetClientRect(unrealhWnd, &rc);
+
+            offset.x = (windowSize.x - VpWidth);
+            offset.y = (windowSize.y - VpHeight);
+
+            offset.x = rc.right - rc.left + offset.x;
+            offset.y = rc.bottom - rc.top + offset.y;
+
+            SetWindowPos(unrealhWnd, NULL, 0, 0, offset.x, offset.y, SWP_NOMOVE | SWP_NOZORDER);
+
+            Sleep(50 * (cnt + 1));
         }
-
-        memcpy(&VpWidth, Buf, sizeof(long));
-        memcpy(&VpHeight, Buf + 4, sizeof(long));
-
-        // auto sizing window
-        POINT windowSize = { 256, 256 };
-
-        if (VpWidth == windowSize.x && VpHeight == windowSize.y)
-            break;
-
-        unsigned long pID = GetProcessId(hProcess);
-        HWND unrealhWnd = FindWindowsByPID(pID);
-
-        if (NULL == unrealhWnd)
-            goto EXIT_THREAD;
-
-        RECT rc;
-        POINT offset = windowSize;
-
-        GetClientRect(unrealhWnd, &rc);
-
-        offset.x = (windowSize.x - VpWidth);
-        offset.y = (windowSize.y - VpHeight);
-
-        offset.x = rc.right - rc.left + offset.x;
-        offset.y = rc.bottom - rc.top + offset.y;
-
-        SetWindowPos(unrealhWnd, NULL, 0, 0, offset.x, offset.y, SWP_NOMOVE | SWP_NOZORDER);
-        Sleep(500);
     }
 
     int oTileSz = 256;
@@ -443,16 +458,31 @@ WorkThread(
 
         const float extTile = oTileSz * StartZ * ATOMIC_FN;
 
-        Vec2D CurrentCoord = {
-            (long)((Coord_From.x - Coord_To.x) / extTile - CORRECTION) * extTile,
-            (long)((Coord_From.y - Coord_To.y) / extTile - CORRECTION) * extTile,
-        };
+        Vec2D CurrentCoord = Coord_To;
+
+        for (; CurrentCoord.x <= EndCoord.x; CurrentCoord.x += extTile)
+        {
+            if ((long)CurrentCoord.x == (long)EndCoord.x)
+                break;
+        }
+
+        for (; CurrentCoord.y <= EndCoord.y; CurrentCoord.y += extTile)
+        {
+            if ((long)CurrentCoord.y == (long)EndCoord.y)
+                break;
+        }
 
         if (CurrentCoord.x > EndCoord.x)
+        {
             SetDlgItemFloat(hDlg, IDC_EDIT_X3, (float)CurrentCoord.x);
+            Coord_From.x = CurrentCoord.x;
+        }
 
         if (CurrentCoord.y > EndCoord.y)
+        {
             SetDlgItemFloat(hDlg, IDC_EDIT_Y3, (float)CurrentCoord.y);
+            Coord_From.y = CurrentCoord.y;
+        }
     }
 
     char z_string[MAX_PATH];
@@ -482,7 +512,7 @@ WorkThread(
 
         const Vec2D resInc = {
             VpWidth * resValue * ZoomTile,
-            VpWidth * resValue * ZoomTile
+            VpHeight * resValue * ZoomTile
         };
 
         const float ZoomDiv = Zoom / StartZ;
@@ -502,7 +532,7 @@ WorkThread(
             Coord_From.y + zoomCalc.y
         };
 
-        sprintf_s(z_string, sizeof(z_string), "%s\\%d", SavePath, ZoomLvl - 1);
+        sprintf_s(z_string, sizeof(z_string), "%s\\%d", SavePath, ZoomLvl);
         CreateDirectory(z_string, NULL);
 
         long LimitX = (long)((Coord_From.x - Coord_To.x) / resInc.x + CORRECTION) - 1;
@@ -529,6 +559,8 @@ WorkThread(
 
                 if (GetFileAttributes(zxy_string) == ((DWORD)-1))
                 {
+                    float fval;
+
                     fval = (float)(StartCoord.x + Increase.x * x);
                     memcpy(Buf + 0, &fval, 4);
                     fval = (float)(StartCoord.y + Increase.y * y);

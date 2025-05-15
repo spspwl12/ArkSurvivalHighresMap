@@ -35,7 +35,7 @@ LoadReg(
     ReadReg("ArkEditorCapture", "IDC_EDIT_Z2", "12800000", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_Z2, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_Z3", "1", Buf);
+    ReadReg("ArkEditorCapture", "IDC_EDIT_Z3", "0", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_Z3, Buf);
 
     ReadReg("ArkEditorCapture", "IDC_EDIT_Z4", "7", Buf);

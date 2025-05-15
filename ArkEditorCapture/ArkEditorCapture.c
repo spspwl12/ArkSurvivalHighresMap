@@ -67,7 +67,6 @@ DlgProc(
                         return (INT_PTR)FALSE;
   
                     EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_OPEN), FALSE);
-                    SaveReg(hDlg);
                     SetTimer(hDlg, 1, 100, NULL);
                     bEnable = 1;
 
@@ -100,6 +99,8 @@ DlgProc(
                     if (!bEnable &&
                         !DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
                         return (INT_PTR)FALSE;
+
+                    SaveReg(hDlg);
 
                     if (StartCapture())
                         DisableAllControls(hDlg);
