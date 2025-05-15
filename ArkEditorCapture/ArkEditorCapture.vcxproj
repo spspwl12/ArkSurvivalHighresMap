@@ -153,6 +153,7 @@
     <ClInclude Include="Process.h" />
     <ClInclude Include="Reg.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SaveText.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArkEditorCapture.c" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Pipe.c" />
     <ClCompile Include="Process.c" />
     <ClCompile Include="Reg.c" />
+    <ClCompile Include="SaveText.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ArkEditorCapture.rc" />

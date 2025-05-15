@@ -11,6 +11,7 @@
 #include "InjectDll.h"
 #include "Pipe.h"
 #include "Image.h"
+#include "SaveText.h"
 #include "../ArkShot/Declare.h"
 
 static CParam cParam;
@@ -498,6 +499,24 @@ WorkThread(
 
     EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_START), TRUE);
     SetWindowText(GetDlgItem(hDlg, IDC_BUTTON_START), "Stop");
+
+    long long timeval = GetTickCount64();
+
+    sprintf_s(z_string, sizeof(z_string), "%s\\info_%lld.txt", SavePath, timeval);
+    sprintf_s(zx_string, sizeof(zx_string),
+        "Map Info: \n\n"
+        "left: \t%g\tright: \t%g\n"
+        "top: \t%g\tbottom: \t%g\n\n"
+        "Min / Max Zoom: \t%d / %d\n"
+        "Zoom Value: \t%.2f\n\n"
+        "Width: \t%d\nHeight: \t%d\n",
+        Coord_To.x, Coord_From.x,
+        Coord_To.y, Coord_From.y,
+        Z_to, Z_from,
+        StartZ, 
+        VpWidth, VpHeight);
+
+    saveTextToFile(z_string, zx_string, (int)strlen(zx_string));
 
     for (long ZoomLvl = 0; ZoomLvl <= Z_from; ++ZoomLvl, Zoom /= 2)
     {

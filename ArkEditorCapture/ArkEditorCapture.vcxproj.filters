@@ -42,6 +42,9 @@
     <ClInclude Include="MainLogic.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="SaveText.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArkEditorCapture.c">
@@ -69,6 +72,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="MainLogic.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SaveText.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
