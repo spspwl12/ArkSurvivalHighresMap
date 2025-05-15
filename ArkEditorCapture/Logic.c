@@ -507,7 +507,7 @@ WorkThread(
         "Map Info: \n\n"
         "left: \t%g\tright: \t%g\n"
         "top: \t%g\tbottom: \t%g\n\n"
-        "Min / Max Zoom: \t%d / %d\n"
+        "Zoom Min / Max: \t%d / %d\n"
         "Zoom Value: \t%.2f\n\n"
         "Width: \t%d\nHeight: \t%d\n",
         Coord_To.x, Coord_From.x,
