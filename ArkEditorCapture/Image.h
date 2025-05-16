@@ -30,15 +30,6 @@ extern "C" {
         const char* srcPath,
         const char* dstPath
     );
-
-    int
-    SaveWebP(
-        const char* filename,
-        unsigned char* bmpData,
-        int width,
-        int height,
-        int quality
-    );
 #ifdef __cplusplus
 }
 #endif

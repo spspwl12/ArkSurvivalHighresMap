@@ -7,14 +7,26 @@
 
 #pragma comment(lib, "gdiplus.lib")
 
-#if defined _DEBUG
+#ifdef _DEBUG
 #pragma comment(lib, "..\\Build\\libwebpd.lib")
+#pragma comment(lib, "..\\Build\\libjpegd.lib")
 #else
 #pragma comment(lib, "..\\Build\\libwebp.lib")
+#pragma comment(lib, "..\\Build\\libjpeg.lib")
 #endif
 
 using namespace Gdiplus;
 static ULONG_PTR gdiplusToken;
+
+int
+ProcessCustomExtension(
+    int type,
+    Bitmap* bmp,
+    int width,
+    int height,
+    const char* savePath,
+    int quality
+);
 
 int
 InitImage(
@@ -64,8 +76,8 @@ GetClsid(
         uuid = L"{557CF400-1A04-11D3-9A73-0000F81EF32E}";
         break;
     case IMAGE_TYPE_JPG: // JPG
-        uuid = L"{557CF401-1A04-11D3-9A73-0000F81EF32E}";
-        break;
+        clsid.Data1 = 1;
+        return clsid;
     case IMAGE_TYPE_GIF: // GIF
         uuid = L"{557CF402-1A04-11D3-9A73-0000F81EF32E}";
         break;
@@ -189,7 +201,7 @@ SaveImageParts(
         int cntX = width / cutSizeX;
         int cntY = height / cutSizeY;
 
-        if (NULL == (parts = new Bitmap(cutSizeX, cutSizeY, PixelFormat32bppARGB)))
+        if (NULL == (parts = new Bitmap(cutSizeX, cutSizeY, PixelFormat24bppRGB)))
             goto ERROR_RESULT;
 
         if (NULL == (graphics = new Graphics(parts)))
@@ -224,20 +236,12 @@ SaveImageParts(
                 if (0 == MultiByteToWideChar(CP_UTF8, 0, zxy_string, -1, buf2, MAX_PATH))
                     goto ERROR_RESULT;
 
-                if (type == IMAGE_TYPE_WEBP)
+                if (type == IMAGE_TYPE_JPG ||
+                    type == IMAGE_TYPE_WEBP)
                 { 
-                    unsigned char* data = GetBitmapData(parts, cutSizeX, cutSizeY);
-
-                    if (NULL == data)
-                        goto ERROR_RESULT;
-
-                    if (0 == SaveWebP(zxy_string, data, cutSizeX, cutSizeY, 20))
-                    {
-                        free(data);
-                        goto ERROR_RESULT;
-                    }
-
-                    free(data);
+                    if (FALSE == ProcessCustomExtension(type,
+                        parts, cutSizeX, cutSizeY, zxy_string, 100))
+                        goto ERROR_RESULT;    
                 }
                 else if (Ok != parts->Save(buf2, &encoderClsid, NULL))
                     goto ERROR_RESULT;
@@ -267,6 +271,55 @@ ERROR_RESULT:
     return 1 == rst;
 }
 
+#include "../libjpeg/jpeglib.h"
+
+int 
+SaveJPG(
+    const char* filename, 
+    unsigned char* bmpData, 
+    int width, 
+    int height, 
+    int quality
+)
+{
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+
+    FILE* file;
+    errno_t err = fopen_s(&file, filename, "wb");
+
+    if (err != 0 || file == NULL)
+        return 0;
+
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+    jpeg_stdio_dest(&cinfo, file);
+
+    cinfo.image_width = width;
+    cinfo.image_height = height;
+    cinfo.input_components = 3;
+    cinfo.in_color_space = JCS_RGB;
+
+    jpeg_set_defaults(&cinfo);
+    if (quality < 100)
+        jpeg_set_quality(&cinfo, quality, TRUE);
+    jpeg_start_compress(&cinfo, TRUE);
+
+    JSAMPROW row_pointer;
+
+    while (cinfo.next_scanline < cinfo.image_height) {
+        row_pointer = &bmpData[cinfo.next_scanline * width * 3];
+        jpeg_write_scanlines(&cinfo, &row_pointer, 1);
+    }
+
+    jpeg_finish_compress(&cinfo);
+    jpeg_destroy_compress(&cinfo);
+
+    fclose(file);
+
+    return 1;
+}
+
 int 
 SaveWebP(
     const char* filename, 
@@ -283,7 +336,12 @@ SaveWebP(
         return 0;
 
     uint8_t* output;
-    size_t outputSize = WebPEncodeRGB(bmpData, width, height, width * 3, (float)quality, &output);
+    size_t outputSize;
+    
+    if (quality >= 100)
+        outputSize = WebPEncodeLosslessRGB(bmpData, width, height, width * 3, &output);
+    else
+        outputSize = WebPEncodeRGB(bmpData, width, height, width * 3, (float)quality, &output);
 
     if (!outputSize) 
         return 0;
@@ -294,4 +352,48 @@ SaveWebP(
     free(output);
 
     return 1;
+}
+
+int
+ProcessCustomExtension(
+    int type,
+    Bitmap* bmp,
+    int width,
+    int height,
+    const char* savePath,
+    int quality
+)
+{
+    unsigned char* data = GetBitmapData(bmp, width, height);
+
+    if (NULL == data)
+        return 0;
+
+    int rst = 0;
+
+    switch (type)
+    {
+        case IMAGE_TYPE_JPG:
+        {
+            if (0 == SaveJPG(savePath, data, width, height, quality))
+                goto ERROR_RESULT;
+
+            break;
+        }
+        case IMAGE_TYPE_WEBP:
+        {
+            if (0 == SaveWebP(savePath, data, width, height, quality))
+                goto ERROR_RESULT;
+
+            break;
+        }
+    }
+
+    rst = 1;
+
+ERROR_RESULT:
+
+    free(data);
+
+    return rst;
 }
