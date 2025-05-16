@@ -7,7 +7,8 @@
 
 이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.
 - minhook ( https://github.com/TsudaKageyu/minhook ) => 정적 라이브러리, 언리얼 엔진 함수를 후킹할 떄 쓰입니다.<br>
-  
+- libwebp ( https://github.com/webmproject/libwebp ) => 정적 라이브러리, bmp 파일을 webp 확장자로 인코딩할 때 쓰입니다.<br>
+
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
 - 확대 레벨 설정 가능: 사용자가 직접 확대 최대치를 설정할 수 있습니다.
