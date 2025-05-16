@@ -364,10 +364,8 @@ WorkThread(
         ExtensionIndex = 2;
     else if (0 == strcmp(Extension, "GIF"))
         ExtensionIndex = 3;
-    else if (0 == strcmp(Extension, "TIF"))
-        ExtensionIndex = 4;
     else if (0 == strcmp(Extension, "PNG"))
-        ExtensionIndex = 5;
+        ExtensionIndex = 4;
     else
         goto EXIT_THREAD;
 
@@ -424,6 +422,12 @@ WorkThread(
 
             offset.x = rc.right - rc.left + offset.x;
             offset.y = rc.bottom - rc.top + offset.y;
+
+            if (offset.x < 50)
+                offset.x = 50;
+
+            if (offset.y < 50)
+                offset.y = 50;
 
             SetWindowPos(unrealhWnd, NULL, 0, 0, offset.x, offset.y, SWP_NOMOVE | SWP_NOZORDER);
 

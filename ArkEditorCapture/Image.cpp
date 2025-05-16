@@ -33,26 +33,22 @@ CloseImage(
     gdiplusToken = 0;
 }
 
-int
-ConvertImage(
-    int type,
-    const char* srcPath,
-    const char* dstPath
+CLSID
+GetClsid(
+    int type
 )
 {
-    if (0 == gdiplusToken && FALSE == InitImage())
-        return FALSE;
-
-    /*
-        IMAGE/BMP  : {557CF400-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/JPEG : {557CF401-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/GIF  : {557CF402-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/TIFF : {557CF405-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/PNG  : {557CF406-1A04-11D3-9A73-0000F81EF32E}
-    */
-
     HRESULT hr;
     const wchar_t* uuid;
+    CLSID clsid = { 0 };
+
+    /*
+    IMAGE/BMP  : {557CF400-1A04-11D3-9A73-0000F81EF32E}
+    IMAGE/JPEG : {557CF401-1A04-11D3-9A73-0000F81EF32E}
+    IMAGE/GIF  : {557CF402-1A04-11D3-9A73-0000F81EF32E}
+    IMAGE/TIFF : {557CF405-1A04-11D3-9A73-0000F81EF32E}
+    IMAGE/PNG  : {557CF406-1A04-11D3-9A73-0000F81EF32E}
+    */
 
     switch (type)
     {
@@ -65,14 +61,14 @@ ConvertImage(
     case 3: // GIF
         uuid = L"{557CF402-1A04-11D3-9A73-0000F81EF32E}";
         break;
-    case 4: // TIF
-        uuid = L"{557CF405-1A04-11D3-9A73-0000F81EF32E}";
-        break;
-    case 5: // PNG
+    //case 4: // TIF
+    //    uuid = L"{557CF405-1A04-11D3-9A73-0000F81EF32E}";
+    //    break;
+    case 4: // PNG
         uuid = L"{557CF406-1A04-11D3-9A73-0000F81EF32E}";
         break;
     default:
-        return FALSE;
+        return clsid;
     }
 
     CLSID encoderClsid;
@@ -80,6 +76,24 @@ ConvertImage(
     hr = CLSIDFromString(uuid, &encoderClsid);
 
     if (FALSE == SUCCEEDED(hr))
+        return clsid;
+
+    return encoderClsid;
+}
+
+int
+ConvertImage(
+    int type,
+    const char* srcPath,
+    const char* dstPath
+)
+{
+    if (0 == gdiplusToken && FALSE == InitImage())
+        return FALSE;
+
+    CLSID encoderClsid = GetClsid(type);
+
+    if (0 == encoderClsid.Data1)
         return FALSE;
 
     Bitmap* bmp = nullptr;
@@ -142,43 +156,9 @@ SaveImageParts(
     if (0 == gdiplusToken && FALSE == InitImage())
         return FALSE;
 
-    /*
-        IMAGE/BMP  : {557CF400-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/JPEG : {557CF401-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/GIF  : {557CF402-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/TIFF : {557CF405-1A04-11D3-9A73-0000F81EF32E}
-        IMAGE/PNG  : {557CF406-1A04-11D3-9A73-0000F81EF32E}
-    */
+    CLSID encoderClsid = GetClsid(type);
 
-    HRESULT hr;
-    const wchar_t* uuid;
-
-    switch (type)
-    {
-    case 1: // BMP
-        uuid = L"{557CF400-1A04-11D3-9A73-0000F81EF32E}";
-        break;
-    case 2: // JPG
-        uuid = L"{557CF401-1A04-11D3-9A73-0000F81EF32E}";
-        break;
-    case 3: // GIF
-        uuid = L"{557CF402-1A04-11D3-9A73-0000F81EF32E}";
-        break;
-    case 4: // TIF
-        uuid = L"{557CF405-1A04-11D3-9A73-0000F81EF32E}";
-        break;
-    case 5: // PNG
-        uuid = L"{557CF406-1A04-11D3-9A73-0000F81EF32E}";
-        break;
-    default:
-        return FALSE;
-    }
-
-    CLSID encoderClsid;
-
-    hr = CLSIDFromString(uuid, &encoderClsid);
-
-    if (FALSE == SUCCEEDED(hr))
+    if (0 == encoderClsid.Data1)
         return FALSE;
 
     Image* image = nullptr;
