@@ -47,6 +47,13 @@ LoadArkEditor(
     char* dllPath
 )
 {
+    char buf[MAX_PATH];
+#ifdef  _DEBUG
+    const char* DLLName = "ArkShotd.dll";
+#else
+    const char* DLLName = "ArkShot.dll";
+#endif
+
     cParam.hDlg = (HWND)hDlg;
 
     DWORD attributes = GetFileAttributes(dllPath);
@@ -54,19 +61,49 @@ LoadArkEditor(
     if (INVALID_FILE_ATTRIBUTES == attributes ||
         0 != (attributes & FILE_ATTRIBUTE_DIRECTORY))
     {
-        MessageBox(hDlg, "Invalid Dll Path.", "Error", MB_ICONEXCLAMATION);
-        return FALSE;
+        int bfd = 0;
+
+        if (GetModuleFileName(NULL, buf, MAX_PATH))
+        {
+            char* ptr = strrchr(buf, '\\');
+
+            if (ptr)
+            {
+                *ptr = 0;
+                const size_t namelen = strlen(buf) + strlen(DLLName) + 1;
+
+                if (namelen <= MAX_PATH)
+                {
+                    sprintf_s(buf, sizeof(buf), "%s\\%s", buf, DLLName);
+                    attributes = GetFileAttributes(buf);
+
+                    if (INVALID_FILE_ATTRIBUTES != attributes ||
+                        0 == (attributes & FILE_ATTRIBUTE_DIRECTORY))
+                    {
+                        dllPath = buf;
+                        SetDlgItemText(cParam.hDlg, IDC_EDIT_DLPATH, buf);
+                        bfd = 1;
+                    }
+                }
+            }
+        }
+
+        if (0 == bfd)
+        {
+            MessageBox(hDlg, "Invalid Dll Path.", "Error", MB_ICONEXCLAMATION);
+            return FALSE;
+        }
     }
 
     if (NULL == (cParam.hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pID)))
     {
-        MessageBox(hDlg, "OpenProcess() Error", "Error", MB_ICONEXCLAMATION);
+        MessageBox(hDlg, "Failed to open the process.", "Error", MB_ICONEXCLAMATION);
         return FALSE;
     }
 
     if (FALSE == InjectDll(cParam.hProcess, dllPath))
     {
-        MessageBox(hDlg, "InjectDll() Error", "Error", MB_ICONEXCLAMATION);
+        MessageBox(hDlg, "Failed to inject the DLL.", "Error", MB_ICONEXCLAMATION);
         CloseHandle(cParam.hProcess);
         return FALSE;
     }
@@ -117,6 +154,7 @@ void
 CloseArkEditor(
 )
 {
+    CloseHandle(cParam.hProcess);
     StopPipeComm();
 }
 
@@ -276,7 +314,7 @@ WorkThread(
 
     if (FALSE == RequestMessage(MODE_GET_PATH, MAX_PATH, BitmapPath))
     {
-        MessageBox(hDlg, "MODE_GET_PATH Error", "Error", MB_ICONEXCLAMATION);
+        MessageBox(hDlg, "Failed to get the ARK DevKit path.", "Error", MB_ICONEXCLAMATION);
         goto EXIT_THREAD;
     }
 
@@ -284,7 +322,7 @@ WorkThread(
 
     if (NULL == filename)
     {
-        MessageBox(hDlg, "Invalid MODE_GET_PATH.", "Error", MB_ICONEXCLAMATION);
+        MessageBox(hDlg, "Invalid ARK DevKit path.", "Error", MB_ICONEXCLAMATION);
         goto EXIT_THREAD;
     }
 
@@ -292,7 +330,7 @@ WorkThread(
 
     if (strlen(BitmapPath) + 9 >= MAX_PATH) // 00001.bmp
     {
-        MessageBox(hDlg, "The file path in ARK Dev Kit is too long. Please check it.", "Error", MB_ICONEXCLAMATION);
+        MessageBox(hDlg, "The file path in ARK DevKit is too long. Please check it.", "Error", MB_ICONEXCLAMATION);
         goto EXIT_THREAD;
     }
 
@@ -359,18 +397,26 @@ WorkThread(
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETLBTEXT, index, (LPARAM)Extension);
 
     if (0 == strcmp(Extension, "BMP"))
-        ExtensionIndex = 1;
+        ExtensionIndex = IMAGE_TYPE_BMP;
     else if (0 == strcmp(Extension, "JPG"))
-        ExtensionIndex = 2;
+        ExtensionIndex = IMAGE_TYPE_JPG;
     else if (0 == strcmp(Extension, "GIF"))
-        ExtensionIndex = 3;
+        ExtensionIndex = IMAGE_TYPE_GIF;
     else if (0 == strcmp(Extension, "PNG"))
-        ExtensionIndex = 4;
+        ExtensionIndex = IMAGE_TYPE_PNG;
+    else if (0 == strcmp(Extension, "WEBP"))
+        ExtensionIndex = IMAGE_TYPE_WEBP;
     else
+    {
+        MessageBox(hDlg, "unknown extension.", "Error", MB_ICONEXCLAMATION);
         goto EXIT_THREAD;
+    }
 
     if (TileSize < 256 || TileSize > 16384)
+    {
+        MessageBox(hDlg, "The tile size is out of range.", "Error", MB_ICONEXCLAMATION);
         goto EXIT_THREAD;
+    }
 
     {
         POINT xy = { 0 };
@@ -381,7 +427,10 @@ WorkThread(
             while (!RequestMessage(MODE_GET_WH, 8, Buf))
             {
                 if (++WaitCount > 10)
+                {
+                    MessageBox(hDlg, "Failed to load the viewport rendering size in ARK DevKit.", "Error", MB_ICONEXCLAMATION);
                     goto EXIT_THREAD;
+                }
 
                 Sleep(100);
             }
@@ -410,7 +459,10 @@ WorkThread(
             HWND unrealhWnd = FindWindowsByPID(pID);
 
             if (NULL == unrealhWnd)
+            {
+                MessageBox(hDlg, "Failed to get the window handle in ARK DevKit.", "Error", MB_ICONEXCLAMATION);
                 goto EXIT_THREAD;
+            }
 
             RECT rc;
             POINT offset = windowSize;
@@ -619,32 +671,22 @@ WorkThread(
 
                     WaitCount = 0;
 
-                    if (TileSize == oTileSz)
+                    const long cutX = (long)((EndCoord.x - rCoord.x) / Increase.x + 0.5) - 1;
+                    const long cutY = (long)((EndCoord.y - rCoord.y) / Increase.y + 0.5) - 1;
+
+                    while (!SaveImageParts(ExtensionIndex,
+                        oTileSz, oTileSz,
+                        x, y,
+                        cutX, cutY,
+                        Extension, BitmapPath, z_string))
                     {
-                        while (!ConvertImage(ExtensionIndex, BitmapPath, zxy_string))
+                        if (++WaitCount > 10)
                         {
-                            if (++WaitCount > 10)
-                                goto EXIT_THREAD;
-
-                            Sleep(100);
+                            MessageBox(hDlg, "failed to convert image.", "Error", MB_ICONEXCLAMATION);
+                            goto EXIT_THREAD;
                         }
-                    }
-                    else
-                    {
-                        const long cutX = (long)((EndCoord.x - rCoord.x) / Increase.x + 0.5) - 1;
-                        const long cutY = (long)((EndCoord.y - rCoord.y) / Increase.y + 0.5) - 1;
 
-                        while (!SaveImageParts(ExtensionIndex,
-                            oTileSz, oTileSz,
-                            x, y,
-                            cutX, cutY,
-                            Extension, BitmapPath, z_string))
-                        {
-                            if (++WaitCount > 10)
-                                goto EXIT_THREAD;
-
-                            Sleep(100);
-                        }
+                        Sleep(100);
                     }
 
                     DeleteFile(BitmapPath);

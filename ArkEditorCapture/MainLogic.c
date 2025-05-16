@@ -45,6 +45,7 @@ LoadReg(
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("JPG"));
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("GIF"));
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("PNG"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("WEBP"));
 
     ReadReg("ArkEditorCapture", "IDC_COMBO_EXTIMG", "0", Buf);
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_SETCURSEL, atoi(Buf), 0);

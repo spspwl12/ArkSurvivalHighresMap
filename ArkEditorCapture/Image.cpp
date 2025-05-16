@@ -1,9 +1,17 @@
 #include "Image.h"
+#include "../libwebp/webp/encode.h"
 #include <windows.h>
 #include <gdiplus.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #pragma comment(lib, "gdiplus.lib")
+
+#if defined _DEBUG
+#pragma comment(lib, "..\\Build\\libwebpd.lib")
+#else
+#pragma comment(lib, "..\\Build\\libwebp.lib")
+#endif
 
 using namespace Gdiplus;
 static ULONG_PTR gdiplusToken;
@@ -52,21 +60,21 @@ GetClsid(
 
     switch (type)
     {
-    case 1: // BMP
+    case IMAGE_TYPE_BMP: // BMP
         uuid = L"{557CF400-1A04-11D3-9A73-0000F81EF32E}";
         break;
-    case 2: // JPG
+    case IMAGE_TYPE_JPG: // JPG
         uuid = L"{557CF401-1A04-11D3-9A73-0000F81EF32E}";
         break;
-    case 3: // GIF
+    case IMAGE_TYPE_GIF: // GIF
         uuid = L"{557CF402-1A04-11D3-9A73-0000F81EF32E}";
         break;
-    //case 4: // TIF
-    //    uuid = L"{557CF405-1A04-11D3-9A73-0000F81EF32E}";
-    //    break;
-    case 4: // PNG
+    case IMAGE_TYPE_PNG: // PNG
         uuid = L"{557CF406-1A04-11D3-9A73-0000F81EF32E}";
         break;
+    case IMAGE_TYPE_WEBP: // WEBP
+        clsid.Data1 = 1;
+        return clsid;
     default:
         return clsid;
     }
@@ -81,62 +89,52 @@ GetClsid(
     return encoderClsid;
 }
 
-int
-ConvertImage(
-    int type,
-    const char* srcPath,
-    const char* dstPath
+void
+ConvertBGRtoRGB(
+    unsigned char* data,
+    int width,
+    int height
 )
 {
-    if (0 == gdiplusToken && FALSE == InitImage())
-        return FALSE;
+    for (int i = 0, j = width * height; i < j; i++) {
+        unsigned char temp = data[i * 3];
+        data[i * 3] = data[i * 3 + 2];
+        data[i * 3 + 2] = temp;
+    }
+}
 
-    CLSID encoderClsid = GetClsid(type);
+unsigned char* 
+GetBitmapData(
+    Bitmap* bmp, 
+    int width, 
+    int height
+) 
+{
+    unsigned char* buffer = (unsigned char*)malloc(width * height * 3);
 
-    if (0 == encoderClsid.Data1)
-        return FALSE;
+    if (NULL == buffer)
+        return 0;
 
-    Bitmap* bmp = nullptr;
-    wchar_t* buf1 = nullptr;
-    wchar_t* buf2 = nullptr;
+    BitmapData bitmapData;
+    Rect rect(0, 0, width, height);
 
-    int rst = 0;
+    if (Ok != bmp->LockBits(&rect, ImageLockModeRead, PixelFormat24bppRGB, &bitmapData))
+    {
+        free(buffer);
+        return 0;
+    }
 
-    if (nullptr == (buf1 = new wchar_t[MAX_PATH]))
-        goto ERROR_RESULT;
+    memcpy(buffer, bitmapData.Scan0, width * height * 3);
 
-    if (0 == MultiByteToWideChar(CP_UTF8, 0, srcPath, -1, buf1, MAX_PATH))
-        goto ERROR_RESULT;
+    if (Ok != bmp->UnlockBits(&bitmapData))
+    {
+        free(buffer);
+        return 0;
+    }
 
-    if (nullptr == (buf2 = new wchar_t[MAX_PATH]))
-        goto ERROR_RESULT;
+    ConvertBGRtoRGB(buffer, width, height);
 
-    if (0 == MultiByteToWideChar(CP_UTF8, 0, dstPath, -1, buf2, MAX_PATH))
-        goto ERROR_RESULT;
-
-    if (nullptr == (bmp = new Bitmap(buf1)))
-        goto ERROR_RESULT;
-
-    if (Ok != bmp->GetLastStatus())
-        goto ERROR_RESULT;
-
-    if (Ok != bmp->Save(buf2, &encoderClsid, NULL))
-        goto ERROR_RESULT;
-
-    rst = 1;
-
-ERROR_RESULT:
-
-    if (nullptr != buf1)
-        delete[] buf1;
-
-    if (nullptr != buf2)
-        delete[] buf2;
-
-    if (nullptr != bmp)
-        delete bmp;
-
-    return 1 == rst;
+    return buffer;
 }
 
 int 
@@ -226,7 +224,22 @@ SaveImageParts(
                 if (0 == MultiByteToWideChar(CP_UTF8, 0, zxy_string, -1, buf2, MAX_PATH))
                     goto ERROR_RESULT;
 
-                if (Ok != parts->Save(buf2, &encoderClsid, NULL))
+                if (type == IMAGE_TYPE_WEBP)
+                { 
+                    unsigned char* data = GetBitmapData(parts, cutSizeX, cutSizeY);
+
+                    if (NULL == data)
+                        goto ERROR_RESULT;
+
+                    if (0 == SaveWebP(zxy_string, data, cutSizeX, cutSizeY, 20))
+                    {
+                        free(data);
+                        goto ERROR_RESULT;
+                    }
+
+                    free(data);
+                }
+                else if (Ok != parts->Save(buf2, &encoderClsid, NULL))
                     goto ERROR_RESULT;
             }
         }
@@ -252,4 +265,33 @@ ERROR_RESULT:
         delete image;
 
     return 1 == rst;
+}
+
+int 
+SaveWebP(
+    const char* filename, 
+    unsigned char* bmpData, 
+    int width, 
+    int height,
+    int quality
+) 
+{
+    FILE* file;
+    errno_t err = fopen_s(&file, filename, "wb");
+
+    if (err != 0 || file == NULL)
+        return 0;
+
+    uint8_t* output;
+    size_t outputSize = WebPEncodeRGB(bmpData, width, height, width * 3, (float)quality, &output);
+
+    if (!outputSize) 
+        return 0;
+
+    fwrite(output, outputSize, 1, file);
+    fclose(file);
+
+    free(output);
+
+    return 1;
 }
