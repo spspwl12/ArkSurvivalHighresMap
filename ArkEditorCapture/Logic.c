@@ -16,14 +16,14 @@
 
 static CParam cParam;
 
-char 
+int 
 SetMessage(
     char mode, 
     int size, 
     char* buf
 );
 
-char 
+int 
 RequestMessage(
     char mode, 
     int size, 
@@ -40,7 +40,15 @@ WorkThread(
     LPVOID lpParam
 );
 
-char 
+INT_PTR CALLBACK
+QualityDialogProc(
+    HWND hDlg,
+    UINT message,
+    WPARAM wParam,
+    LPARAM lParam
+);
+
+int 
 LoadArkEditor(
     void* hDlg,
     unsigned long pID,
@@ -61,7 +69,7 @@ LoadArkEditor(
     if (INVALID_FILE_ATTRIBUTES == attributes ||
         0 != (attributes & FILE_ATTRIBUTE_DIRECTORY))
     {
-        int bfd = 0;
+        int bfd = FALSE;
 
         if (GetModuleFileName(NULL, buf, MAX_PATH))
         {
@@ -82,13 +90,13 @@ LoadArkEditor(
                     {
                         dllPath = buf;
                         SetDlgItemText(cParam.hDlg, IDC_EDIT_DLPATH, buf);
-                        bfd = 1;
+                        bfd = TRUE;
                     }
                 }
             }
         }
 
-        if (0 == bfd)
+        if (FALSE == bfd)
         {
             MessageBox(hDlg, "Invalid Dll Path.", "Error", MB_ICONEXCLAMATION);
             return FALSE;
@@ -150,6 +158,33 @@ LoadValue(
     }
 }
 
+int
+OpenProcessProc(
+    HWND hDlg
+)
+{
+    char buf[255];
+
+    GetDlgItemText(hDlg, IDC_EDIT_PN, buf, sizeof(buf));
+    const unsigned long pID = GetpIDByName(buf);
+
+    if (0 == pID)
+    {
+        MessageBox(hDlg, "Process not found.", "Error", MB_ICONEXCLAMATION);
+        return FALSE;
+    }
+
+    GetDlgItemText(hDlg, IDC_EDIT_DLPATH, buf, sizeof(buf));
+
+    if (FALSE == LoadArkEditor(hDlg, pID, buf))
+        return FALSE;
+
+    EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_OPEN), FALSE);
+    SetTimer(hDlg, 1, 100, NULL);
+
+    return TRUE;
+}
+
 void 
 CloseArkEditor(
 )
@@ -158,27 +193,29 @@ CloseArkEditor(
     StopPipeComm();
 }
 
-char 
+int 
 StartCapture(
+    int quality
 )
 {
     if (0 < cParam.Status)
     {
         StopCapture();
-        return 1;
+        return TRUE;
     }
 
     cParam.Status = 1;
+    cParam.quality = quality;
 
     HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, WorkThread, NULL, 0, NULL);
 
     if (NULL != hThread)
     {
         CloseHandle(hThread);
-        return 1;
+        return TRUE;
     }
 
-    return 0;
+    return FALSE;
 }
 
 void
@@ -248,7 +285,7 @@ SetButtonAction(
     }
 }
 
-char 
+int 
 SetMessage(
     char mode, 
     int size,
@@ -274,7 +311,7 @@ SetMessage(
     return TRUE;
 }
 
-char 
+int 
 RequestMessage(
     char mode, 
     int size, 
@@ -565,12 +602,14 @@ WorkThread(
         "top: \t%g\tbottom: \t%g\n\n"
         "Zoom Min / Max: \t%d / %d\n"
         "Zoom Value: \t%.2f\n\n"
-        "Width: \t%d\nHeight: \t%d\n",
+        "Width: \t%d\nHeight: \t%d\n\n"
+        "Image Codec: \t%s\nQuality: \t%d",
         Coord_To.x, Coord_From.x,
         Coord_To.y, Coord_From.y,
         Z_to, Z_from,
         StartZ, 
-        VpWidth, VpHeight);
+        VpWidth, VpHeight,
+        Extension, cParam.quality);
 
     saveTextToFile(z_string, zx_string, (int)strlen(zx_string));
 
@@ -675,6 +714,7 @@ WorkThread(
                     const long cutY = (long)((EndCoord.y - rCoord.y) / Increase.y + 0.5) - 1;
 
                     while (!SaveImageParts(ExtensionIndex,
+                        cParam.quality,
                         oTileSz, oTileSz,
                         x, y,
                         cutX, cutY,
@@ -710,4 +750,27 @@ StopCapture(
 )
 {
     cParam.Status = 1;
+}
+
+int 
+GetImageQuality(
+    HINSTANCE hInst,
+    HWND hDlg,
+    int val
+)
+{
+    const int index = (int)SendDlgItemMessage(hDlg,
+        IDC_COMBO_EXTIMG, CB_GETCURSEL, 0, 0);
+
+    char Buf[255] = { 0 };
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETLBTEXT, index, (LPARAM)Buf);
+
+    if (0 == strcmp(Buf, "JPG") ||
+        0 == strcmp(Buf, "WEBP"))
+    {
+        return (int)DialogBoxParam(hInst,
+            MAKEINTRESOURCE(IDD_QUALITY), hDlg, QualityDialogProc, val);
+    }
+
+    return -1;
 }

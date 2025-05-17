@@ -202,7 +202,7 @@ Hook_FSceneViewport_ResizeViewport(
     ViewportSize.y = NewSizeY;
 }
 
-char 
+int
 LoadDll(
     void* _hModule
 )
@@ -369,7 +369,7 @@ LoadDll(
     return TRUE;
 }
 
-char
+int
 UnloadDll(
 )
 {
@@ -414,5 +414,5 @@ UnloadThread(
     Sleep(100);
 
     FreeLibrary((HMODULE)lpvParam);
-    return 0;
+    return FALSE;
 }

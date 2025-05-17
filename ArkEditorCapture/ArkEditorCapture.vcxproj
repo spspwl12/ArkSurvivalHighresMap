@@ -135,6 +135,7 @@
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -157,7 +158,7 @@
     <ClInclude Include="SaveText.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ArkEditorCapture.c" />
+    <ClCompile Include="Main.c" />
     <ClCompile Include="Dialog.c" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Logic.c" />
@@ -165,6 +166,7 @@
     <ClCompile Include="MainLogic.c" />
     <ClCompile Include="Pipe.c" />
     <ClCompile Include="Process.c" />
+    <ClCompile Include="QualityDialog.c" />
     <ClCompile Include="Reg.c" />
     <ClCompile Include="SaveText.c" />
   </ItemGroup>

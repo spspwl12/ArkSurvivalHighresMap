@@ -6,7 +6,10 @@ static HANDLE hPipe;
 static BOOL bStart;
 static void* cbEndPipe;
 
-UINT WINAPI PipeThread(LPVOID cb)
+UINT WINAPI
+PipeThread(
+    LPVOID cb
+)
 {
     char buf[PIPE_BUF_SIZE];
     DWORD bytesRead;
@@ -47,10 +50,13 @@ FINALLY:
     bStart = FALSE;
   
     ((void(*)())cbEndPipe)();
-    return 0;
+    return FALSE;
 }
 
-char StartPipeComm(void* cb)
+int
+StartPipeComm(
+    void* cb
+)
 {
     if (INVALID_HANDLE_VALUE == (hPipe = CreateNamedPipeA(
         PIPE_NAME,
@@ -74,7 +80,9 @@ char StartPipeComm(void* cb)
     return TRUE;
 }
 
-char StopPipeComm()
+int
+StopPipeComm(
+)
 {
     bStart = FALSE;
 
@@ -98,12 +106,19 @@ char StopPipeComm()
     return TRUE;
 }
 
-void SetDisconnectedPipeFunc(void* cb)
+void 
+SetDisconnectedPipeFunc(
+    void* cb
+)
 {
     cbEndPipe = cb;
 }
 
-char SendPipeMessage(int size, char* buf)
+int
+SendPipeMessage(
+    int size, 
+    char* buf
+)
 {
     DWORD bytesRead;
     return WriteFile(hPipe, buf, size, &bytesRead, NULL) && bytesRead != 0;

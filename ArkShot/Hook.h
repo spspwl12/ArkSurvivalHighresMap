@@ -1,13 +1,13 @@
 #pragma once
 
-char
+int
 HookFunction(
     void* pTarget,
     void* pDetour,
     void** ppOriginal
 );
 
-char
+int
 UnHookFunction(
     void* pTarget
 );

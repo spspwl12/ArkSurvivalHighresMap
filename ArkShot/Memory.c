@@ -1,6 +1,6 @@
 #include <Windows.h>
 
-char
+int
 ReadMemByte(
     void* hdl,
     unsigned long long addr,
@@ -11,23 +11,23 @@ ReadMemByte(
     char val;
 
     if (NULL == hdl)
-        return 0;
+        return FALSE;
 
     if (0 == addr)
-        return 0;
+        return FALSE;
 
     if (FALSE == ReadProcessMemory((HANDLE)hdl, (void*)addr, &val, sizeof(char), &bytes))
-        return 0;
+        return FALSE;
 
     if (sizeof(char) != bytes)
-        return 0;
+        return FALSE;
 
     *buf = val;
 
-    return 1;
+    return TRUE;
 }
 
-char
+int
 ReadMemBuf(
     void* hdl,
     unsigned long long addr,
@@ -38,18 +38,18 @@ ReadMemBuf(
     size_t bytes;
 
     if (NULL == hdl)
-        return 0;
+        return FALSE;
 
     if (0 == addr)
-        return 0;
+        return FALSE;
 
     if (FALSE == ReadProcessMemory((HANDLE)hdl, (void*)addr, buf, size, &bytes))
-        return 0;
+        return FALSE;
 
     if (size != bytes)
-        return 0;
+        return FALSE;
 
-    return 1;
+    return TRUE;
 }
 
 unsigned long long
@@ -62,21 +62,21 @@ ReadMemPtr(
     unsigned long long val;
 
     if (NULL == hdl)
-        return 0;
+        return (unsigned long long)0;
 
     if (0 == addr)
-        return 0;
+        return (unsigned long long)0;
 
     if (FALSE == ReadProcessMemory((HANDLE)hdl, (void*)addr, &val, sizeof(unsigned long long), &bytes))
-        return 0;
+        return (unsigned long long)0;
 
     if (sizeof(unsigned long long) != bytes)
-        return 0;
+        return (unsigned long long)0;
 
     return val;
 }
 
-char
+int
 WriteMemByte(
     void* hdl,
     unsigned long long addr,
@@ -86,21 +86,21 @@ WriteMemByte(
     size_t bytes;
 
     if (NULL == hdl)
-        return 0;
+        return FALSE;
 
     if (0 == addr)
-        return 0;
+        return FALSE;
 
     if (FALSE == WriteProcessMemory((HANDLE)hdl, (void*)addr, &val, sizeof(char), &bytes))
-        return 0;
+        return FALSE;
 
     if (sizeof(char) != bytes)
-        return 0;
+        return FALSE;
 
-    return 1;
+    return TRUE;
 }
 
-char 
+int
 WriteMemLong(
     void* hdl,
     unsigned long long addr,
@@ -110,21 +110,21 @@ WriteMemLong(
     size_t bytes;
 
     if (NULL == hdl)
-        return 0;
+        return FALSE;
 
     if (0 == addr)
-        return 0;
+        return FALSE;
 
     if (FALSE == WriteProcessMemory((HANDLE)hdl, (void*)addr, &val, sizeof(long), &bytes))
-        return 0;
+        return FALSE;
 
     if (sizeof(long) != bytes)
-        return 0;
+        return FALSE;
 
-    return 1;
+    return TRUE;
 }
 
-char
+int
 WriteMemBuf(
     void* hdl,
     unsigned long long addr,
@@ -135,16 +135,16 @@ WriteMemBuf(
     size_t bytes;
 
     if (NULL == hdl)
-        return 0;
+        return FALSE;
 
     if (0 == addr)
-        return 0;
+        return FALSE;
 
     if (FALSE == WriteProcessMemory((HANDLE)hdl, (void*)addr, buf, size, &bytes))
-        return 0;
+        return FALSE;
 
     if (size != bytes)
-        return 0;
+        return FALSE;
 
-    return 1;
+    return TRUE;
 }

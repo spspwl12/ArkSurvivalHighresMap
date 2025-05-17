@@ -1,12 +1,12 @@
 #pragma once
 
-char
+int
 InjectDll(
     void* hdl,
     const char* dllPath
 );
 
-char
+int
 UnloadDll(
     void* hdl,
     const char* dllPath

@@ -8,7 +8,7 @@
 
 static int HookCount;
 
-char
+int
 HookFunction(
     void* pTarget,
     void* pDetour,
@@ -36,7 +36,7 @@ HookFunction(
     return TRUE;
 }
 
-char
+int
 UnHookFunction(
     void* pTarget
 )

@@ -20,6 +20,7 @@ extern "C" {
     int
     SaveImageParts(
         int type,
+        int quality,
         int cutSizeX,
         int cutSizeY,
         int startX,

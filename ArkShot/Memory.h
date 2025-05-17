@@ -1,13 +1,13 @@
 #pragma once
 
-char
+int
 ReadMemByte(
 	void* hdl,
 	unsigned long long addr,
 	char* buf
 );
 
-char
+int
 ReadMemBuf(
 	void* hdl,
 	unsigned long long addr,
@@ -21,21 +21,21 @@ ReadMemPtr(
 	unsigned long long addr
 );
 
-char
+int
 WriteMemByte(
 	void* hdl,
 	unsigned long long addr,
 	char val
 );
 
-char
+int
 WriteMemLong(
 	void* hdl,
 	unsigned long long addr,
 	long val
 );
 
-char
+int
 WriteMemBuf(
 	void* hdl,
 	unsigned long long addr,

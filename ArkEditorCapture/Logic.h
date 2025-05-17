@@ -8,6 +8,7 @@ typedef struct StartCaptureParameter {
     void* funcAddr;
     void* hDlg;
     int Status;
+    int quality;
 }CParam;
 
 typedef struct Vector2D {
@@ -15,7 +16,12 @@ typedef struct Vector2D {
     float y;
 } Vec2D;
 
-char
+int
+OpenProcessProc(
+    HWND hDlg
+);
+
+int
 LoadArkEditor(
     void* hDlg,
     unsigned long pID,
@@ -30,8 +36,9 @@ void
 LoadValue(
 );
 
-char 
+int 
 StartCapture(
+    int quality
 );
 
 void
@@ -41,4 +48,11 @@ StopCapture(
 void
 SetButtonAction(
     int mode
+);
+
+int
+GetImageQuality(
+    HINSTANCE hInst,
+    HWND hDlg,
+    int val
 );

@@ -4,6 +4,8 @@
 #include <gdiplus.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <process.h>
+#include <string>
 
 #pragma comment(lib, "gdiplus.lib")
 
@@ -15,17 +17,69 @@
 #pragma comment(lib, "..\\Build\\libjpeg.lib")
 #endif
 
+using namespace std;
 using namespace Gdiplus;
 static ULONG_PTR gdiplusToken;
 
-int
-ProcessCustomExtension(
+struct converterThreadData
+{
+    HANDLE handle;
+    Bitmap* bitmap;
+    int type;
+    int quality;
+    int width;
+    int height;
+    int x;
+    int y;
+    string savePath;
+    int result;
+
+    converterThreadData() : handle(0), bitmap(0), type(0), quality(0), 
+        width(0), height(0), x(0), y(0), result(0) {}
+
+    void setData(int type, int quality, int width, 
+        int height, int x, int y, const char* savePath)
+    {
+        this->handle = 0;
+        this->bitmap = 0;
+        this->result = 0;
+        this->type = type;
+        this->quality = quality;
+        this->width = width;
+        this->height = height;
+        this->x = x;
+        this->y = y;
+        this->savePath = savePath;
+    }
+};
+
+bool
+ProcessImageSaving(
     int type,
     Bitmap* bmp,
     int width,
     int height,
-    const char* savePath,
+    string savePath,
     int quality
+);
+
+bool
+ProcessSaveImageParts(
+    Image* img,
+    converterThreadData* datas,
+    int index,
+    bool bSingle
+);
+
+bool
+WaitThreads(
+    int maxThreads,
+    converterThreadData* datas
+);
+
+UINT WINAPI
+_converterThread(
+    LPVOID lpParam
 );
 
 int
@@ -75,18 +129,12 @@ GetClsid(
     case IMAGE_TYPE_BMP: // BMP
         uuid = L"{557CF400-1A04-11D3-9A73-0000F81EF32E}";
         break;
-    case IMAGE_TYPE_JPG: // JPG
-        clsid.Data1 = 1;
-        return clsid;
     case IMAGE_TYPE_GIF: // GIF
         uuid = L"{557CF402-1A04-11D3-9A73-0000F81EF32E}";
         break;
     case IMAGE_TYPE_PNG: // PNG
         uuid = L"{557CF406-1A04-11D3-9A73-0000F81EF32E}";
         break;
-    case IMAGE_TYPE_WEBP: // WEBP
-        clsid.Data1 = 1;
-        return clsid;
     default:
         return clsid;
     }
@@ -152,6 +200,7 @@ GetBitmapData(
 int 
 SaveImageParts(
     int type,
+    int quality,
     int cutSizeX,
     int cutSizeY,
     int startX,
@@ -166,109 +215,104 @@ SaveImageParts(
     if (0 == gdiplusToken && FALSE == InitImage())
         return FALSE;
 
-    CLSID encoderClsid = GetClsid(type);
-
-    if (0 == encoderClsid.Data1)
-        return FALSE;
-
     Image* image = nullptr;
-    wchar_t* buf1 = nullptr;
-    wchar_t* buf2 = nullptr;
-    Bitmap* parts = nullptr;
-    Graphics* graphics = nullptr;
-
-    int rst = 0;
-
+    wchar_t* wszPath = nullptr;
+    converterThreadData* thData = nullptr;
     char zx_string[MAX_PATH];
     char zxy_string[MAX_PATH];
+    int rst = FALSE;
+    int width, height, cntX, cntY, count;
+    int coreCount;
 
-    if (nullptr == (buf1 = new wchar_t[MAX_PATH]))
+    if (nullptr == (wszPath = new wchar_t[MAX_PATH]))
         goto ERROR_RESULT;
 
-    if (0 == MultiByteToWideChar(CP_UTF8, 0, srcPath, -1, buf1, MAX_PATH))
+    if (0 == MultiByteToWideChar(CP_UTF8, 0, srcPath, -1, wszPath, MAX_PATH))
         goto ERROR_RESULT;
 
-    if (nullptr == (buf2 = new wchar_t[MAX_PATH]))
+    if (nullptr == (image = new Image(wszPath)))
         goto ERROR_RESULT;
 
-    if (nullptr == (image = new Image(buf1)))
+    width = image->GetWidth();
+    height = image->GetHeight();
+
+    cntX = width / cutSizeX;
+    cntY = height / cutSizeY;
+
+    count = cntX * cntY;
+    coreCount = 0;
+
+    SYSTEM_INFO sysInfo;
+
+    GetSystemInfo(&sysInfo);
+    coreCount = (int)sysInfo.dwNumberOfProcessors;
+
+    if (count <= 1)
+        coreCount = 1;
+
+    if (nullptr == (thData = new converterThreadData[coreCount]))
         goto ERROR_RESULT;
 
+    for (int i = 0, j = 0, x, y; i < count; ++i)
     {
-        int width = image->GetWidth();
-        int height = image->GetHeight();
+        x = i % cntX;
+        y = i / cntX;
 
-        int cntX = width / cutSizeX;
-        int cntY = height / cutSizeY;
-
-        if (NULL == (parts = new Bitmap(cutSizeX, cutSizeY, PixelFormat24bppRGB)))
-            goto ERROR_RESULT;
-
-        if (NULL == (graphics = new Graphics(parts)))
-            goto ERROR_RESULT;
-
-        for (int x = 0; x < cntX; ++x)
+        if (x <= maxX)
         {
-            if (maxX < x)
-                continue;
-
             sprintf_s(zx_string, sizeof(zx_string), "%s\\%d", dstPath, startX + x);
             CreateDirectory(zx_string, NULL);
 
-            for (int y = 0; y < cntY; ++y)
+            if (y <= maxY)
             {
-                if (maxY < y)
-                    continue;
-
                 sprintf_s(zxy_string, sizeof(zxy_string), "%s\\%d.%s", zx_string, startY + y, extension);
 
-                if (GetFileAttributes(zxy_string) != ((DWORD)-1))
-                    continue;
+                if (GetFileAttributes(zxy_string) == ((DWORD)-1))
+                {
+                    thData[j].setData(type, quality, cutSizeX, cutSizeY, x, y, zxy_string);
 
-                graphics->DrawImage(
-                    image,
-                    0, 0,
-                    cutSizeX * x,
-                    cutSizeY * y,
-                    cutSizeX,
-                    cutSizeY, UnitPixel);
+                    if (false == ProcessSaveImageParts(image, thData, j, count == 1))
+                        goto ERROR_RESULT;
 
-                if (0 == MultiByteToWideChar(CP_UTF8, 0, zxy_string, -1, buf2, MAX_PATH))
-                    goto ERROR_RESULT;
-
-                if (type == IMAGE_TYPE_JPG ||
-                    type == IMAGE_TYPE_WEBP)
-                { 
-                    if (FALSE == ProcessCustomExtension(type,
-                        parts, cutSizeX, cutSizeY, zxy_string, 100))
-                        goto ERROR_RESULT;    
+                    j++;
                 }
-                else if (Ok != parts->Save(buf2, &encoderClsid, NULL))
-                    goto ERROR_RESULT;
             }
+        }
+
+        if (j > 0 && count > 1 && (coreCount <= j || count <= i + 1))
+        {
+            if (false == WaitThreads(coreCount, thData))
+                goto ERROR_RESULT;
+
+            j = 0;
         }
     }
 
-    rst = 1;
+    rst = TRUE;
 
 ERROR_RESULT:
 
-    if (nullptr != graphics)
-        delete graphics;
+    if (nullptr != thData)
+    {
+        for (int i = 0; i < coreCount; ++i)
+        {
+            if (NULL != thData[i].handle)
+                CloseHandle(thData[i].handle);
 
-    if (nullptr != parts)
-        delete parts;
+            if (NULL != thData[i].bitmap)
+                delete thData[i].bitmap;
+        }
 
-    if (nullptr != buf1)
-        delete[] buf1;
+        delete[] thData;
+    }
 
-    if (nullptr != buf2)
-        delete[] buf2;
+    if (nullptr != wszPath)
+        delete[] wszPath;
 
     if (nullptr != image)
         delete image;
 
-    return 1 == rst;
+    return TRUE == rst;
 }
 
 #include "../libjpeg/jpeglib.h"
@@ -354,46 +398,212 @@ SaveWebP(
     return 1;
 }
 
-int
-ProcessCustomExtension(
+bool
+ProcessImageSaving(
     int type,
     Bitmap* bmp,
     int width,
     int height,
-    const char* savePath,
+    string savePath,
     int quality
 )
 {
-    unsigned char* data = GetBitmapData(bmp, width, height);
-
-    if (NULL == data)
-        return 0;
-
-    int rst = 0;
+    unsigned char* rgbData = 0;
+    bool rst = false;
 
     switch (type)
     {
+        case IMAGE_TYPE_BMP:
+        case IMAGE_TYPE_PNG:
+        case IMAGE_TYPE_GIF:
+        {
+            CLSID encoderClsid = GetClsid(type);
+
+            if (0 == encoderClsid.Data1)
+                return FALSE;
+
+            wchar_t* wszPath;
+
+            if (nullptr == (wszPath = new wchar_t[MAX_PATH]))
+                return FALSE;
+
+            if (0 == MultiByteToWideChar(CP_UTF8, 0, savePath.c_str(), -1, wszPath, MAX_PATH))
+            {
+                delete[] wszPath;
+                return FALSE;
+            }
+
+            if (Ok != bmp->Save(wszPath, &encoderClsid, NULL))
+            {
+                delete[] wszPath;
+                return FALSE;
+            }
+
+            delete[] wszPath;
+            break;
+        }
         case IMAGE_TYPE_JPG:
         {
-            if (0 == SaveJPG(savePath, data, width, height, quality))
+            if (NULL == (rgbData = GetBitmapData(bmp, width, height)))
+                return FALSE;
+
+            if (0 == SaveJPG(savePath.c_str(), rgbData, width, height, quality))
                 goto ERROR_RESULT;
 
             break;
         }
         case IMAGE_TYPE_WEBP:
         {
-            if (0 == SaveWebP(savePath, data, width, height, quality))
+            if (NULL == (rgbData = GetBitmapData(bmp, width, height)))
+                return FALSE;
+
+            if (0 == SaveWebP(savePath.c_str(), rgbData, width, height, quality))
                 goto ERROR_RESULT;
 
             break;
         }
     }
 
-    rst = 1;
+    rst = true;
 
 ERROR_RESULT:
 
-    free(data);
+    if (NULL != rgbData)
+        free(rgbData);
 
     return rst;
+}
+
+bool 
+ProcessSaveImageParts(
+    Image* img,
+    converterThreadData* datas,
+    int index,
+    bool bSingle
+)
+{
+    Bitmap* parts = nullptr;
+    Graphics* graphics = nullptr;
+    bool rst = false;
+
+    if (nullptr == (parts = new Bitmap(datas->width, datas->height, PixelFormat24bppRGB)))
+        goto ERROR_RESULT;
+
+    if (nullptr == (graphics = new Graphics(parts)))
+        goto ERROR_RESULT;
+
+    if (bSingle)
+    {
+        if (Ok != graphics->DrawImage(
+            img,
+            0, 0,
+            0, 0,
+            datas->width, datas->height, UnitPixel))
+            goto ERROR_RESULT;
+
+        if (false == ProcessImageSaving(
+            datas->type,
+            parts, 
+            datas->width, datas->height,
+            datas->savePath,
+            datas->quality))
+            goto ERROR_RESULT;
+    }
+    else
+    {
+        converterThreadData& data = datas[index];
+
+        if (Ok != graphics->DrawImage(
+            img,
+            0, 0,
+            data.width * data.x,
+            data.height * data.y,
+            data.width, data.height, UnitPixel))
+            goto ERROR_RESULT;
+
+        data.bitmap = parts;
+
+        if (NULL == (data.handle = (HANDLE)_beginthreadex(NULL, 0, _converterThread, &data, 0, NULL)))
+            goto ERROR_RESULT;
+    }
+
+    rst = true;
+
+ERROR_RESULT:
+
+    if (nullptr != graphics)
+        delete graphics;
+
+    if (bSingle && nullptr != parts)
+        delete parts;
+
+    return rst;
+}
+
+bool 
+WaitThreads(
+    int maxThreads,
+    converterThreadData* datas
+)
+{
+    HANDLE* h = new HANDLE[maxThreads];
+
+    if (nullptr == h)
+        return false;
+
+    bool rst = true;
+    int max = maxThreads;
+
+    for (int i = 0; i < maxThreads; ++i)
+    {
+        if (NULL == (h[i] = datas[i].handle))
+        {
+            max = i;
+            break;
+        }
+    }
+
+    if (max <= 0)
+    {
+        delete[] h;
+        return false;
+    }
+
+    WaitForMultipleObjects(max, h, TRUE, INFINITE);
+
+    for (int i = 0; i < max; ++i)
+    {
+        CloseHandle(h[i]);
+        datas[i].handle = 0;
+
+        if (nullptr != datas[i].bitmap)
+        {
+            delete datas[i].bitmap;
+            datas[i].bitmap = nullptr;
+        }
+
+        if (0 == datas[i].result)
+            rst = false;
+    }
+
+    delete[] h;
+    return rst;
+}
+
+UINT WINAPI
+_converterThread(
+    LPVOID lpParam
+)
+{
+    converterThreadData* data = (converterThreadData*)lpParam;
+
+    data->result = ProcessImageSaving(
+        data->type,
+        data->bitmap,
+        data->width,
+        data->height,
+        data->savePath,
+        data->quality);
+
+    return FALSE;
 }

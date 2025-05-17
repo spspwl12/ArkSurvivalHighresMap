@@ -9,6 +9,12 @@ DlgProc(
     LPARAM      lParam
 );
 
+int
+LoadVal(
+    const char* name,
+    const char* initVal
+);
+
 void
 LoadReg(
     HWND        hDlg
@@ -17,6 +23,12 @@ LoadReg(
 void
 SaveReg(
     HWND        hDlg
+);
+
+int
+SaveVal(
+    const char* name,
+    int val
 );
 
 void

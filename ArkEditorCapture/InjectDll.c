@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include "Process.h"
 
-char
+int
 InjectDll(
     void* hdl,
     const char* dllPath
@@ -10,22 +10,22 @@ InjectDll(
     size_t pathLen = strlen(dllPath);
 
     if (0 >= pathLen)
-        return 0;
+        return FALSE;
 
     HMODULE hModule = GetModuleHandle("kernel32.dll");
 
     if (NULL == hModule)
-        return 0;
+        return FALSE;
 
     void* pFunction = GetProcAddress(hModule, "LoadLibraryA");
 
     if (NULL == pFunction)
-        return 0;
+        return FALSE;
 
     void* pMem = VirtualAllocEx((HANDLE)hdl, NULL, pathLen, MEM_COMMIT, PAGE_READWRITE);
 
     if (NULL == pMem)
-        return 0;
+        return FALSE;
 
     DWORD rst = 0;
     size_t bytes;
@@ -43,7 +43,7 @@ InjectDll(
     if (FALSE == GetExitCodeThread(hThread, &rst))
         goto FREE_ALLOC;
 
-    rst = 1;
+    rst = TRUE;
 
 FREE_ALLOC:
 
@@ -51,10 +51,11 @@ FREE_ALLOC:
         CloseHandle(hThread);
 
     VirtualFreeEx((HANDLE)hdl, pMem, 0, MEM_RELEASE);
-    return (char)rst;
+
+    return rst;
 }
 
-char
+int
 UnloadDll(
     void* hdl,
     const char* dllPath
@@ -63,7 +64,7 @@ UnloadDll(
     unsigned long pID = GetProcessId(hdl);
 
     if (0 == pID)
-        return 0;
+        return FALSE;
 
     char* dllName = strrchr(dllPath, '\\');
 
@@ -75,25 +76,25 @@ UnloadDll(
     HMODULE hModule = GetModuleBaseAddress(pID, dllName, NULL);
 
     if (NULL == hModule)
-        return 0;
+        return FALSE;
 
     HMODULE hModule2 = GetModuleHandle("kernel32.dll");
 
     if (NULL == hModule2)
-        return 0;
+        return FALSE;
 
     void* pFunction = GetProcAddress(hModule, "FreeLibrary");
 
     if (NULL == pFunction)
-        return 0;
+        return FALSE;
 
     HANDLE hThread;
 
     if (NULL == (hThread = CreateRemoteThread((HANDLE)hdl, NULL, 0,
         pFunction, hModule, 0, NULL)))
-        return 0;
+        return FALSE;
 
     WaitForSingleObject(hThread, INFINITE);
 
-    return 1;
+    return TRUE;
 }

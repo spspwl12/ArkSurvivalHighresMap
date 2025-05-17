@@ -4,6 +4,8 @@
 #include "Reg.h"
 #include "MainLogic.h"
 
+#define PROGRAM_NAME    "ArkEditorCapture"
+
 void
 LoadReg(
     HWND        hDlg
@@ -11,34 +13,34 @@ LoadReg(
 {
     char Buf[255] = { 0 };
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_PN", "UE4Editor.exe", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_PN", "UE4Editor.exe", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_PN, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_DLPATH", "", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_DLPATH", "", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_DLPATH, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_SVPATH", "C:\\", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_SVPATH", "C:\\", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_SVPATH, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_X2", "-1000000", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_X2", "-1000000", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_X2, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_X3", "1000000", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_X3", "1000000", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_X3, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_Y2", "-1000000", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_Y2", "-1000000", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_Y2, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_Y3", "1000000", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_Y3", "1000000", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_Y3, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_Z2", "12800000", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_Z2", "12800000", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_Z2, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_Z3", "0", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_Z3", "0", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_Z3, Buf);
 
-    ReadReg("ArkEditorCapture", "IDC_EDIT_Z4", "7", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_EDIT_Z4", "7", Buf);
     SetDlgItemText(hDlg, IDC_EDIT_Z4, Buf);
 
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("BMP"));
@@ -47,7 +49,7 @@ LoadReg(
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("PNG"));
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("WEBP"));
 
-    ReadReg("ArkEditorCapture", "IDC_COMBO_EXTIMG", "0", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_COMBO_EXTIMG", "0", Buf);
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_SETCURSEL, atoi(Buf), 0);
 
     SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("256"));
@@ -58,8 +60,22 @@ LoadReg(
     SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("8192"));
     SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("16384"));
 
-    ReadReg("ArkEditorCapture", "IDC_COMBO_TILESZ", "0", Buf);
+    ReadReg(PROGRAM_NAME, "IDC_COMBO_TILESZ", "0", Buf);
     SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_SETCURSEL, atoi(Buf), 0);
+}
+
+int 
+LoadVal(
+    const char* name,
+    const char* initVal
+)
+{
+    char Buf[255] = { 0 };
+
+    ReadReg(PROGRAM_NAME, name, initVal, Buf);
+    Buf[10] = 0;
+
+    return atoi(Buf);
 }
 
 void
@@ -70,48 +86,61 @@ SaveReg(
     char Buf[255] = { 0 };
 
     GetDlgItemText(hDlg, IDC_EDIT_PN, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_PN", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_PN", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_DLPATH, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_DLPATH", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_DLPATH", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_SVPATH, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_SVPATH", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_SVPATH", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_X2, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_X2", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_X2", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_X3, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_X3", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_X3", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_Y2, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_Y2", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_Y2", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_Y3, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_Y3", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_Y3", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_Z2, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_Z2", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_Z2", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_Z3, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_Z3", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_Z3", Buf);
 
     GetDlgItemText(hDlg, IDC_EDIT_Z4, Buf, sizeof(Buf));
-    WriteReg("ArkEditorCapture", "IDC_EDIT_Z4", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_EDIT_Z4", Buf);
 
     int sel = (int)SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETCURSEL, 0, 0);
 
     Buf[0] = (char)sel + '0';
     Buf[1] = 0;
 
-    WriteReg("ArkEditorCapture", "IDC_COMBO_EXTIMG", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_COMBO_EXTIMG", Buf);
 
     sel = (int)SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_GETCURSEL, 0, 0);
 
     Buf[0] = (char)sel + '0';
     Buf[1] = 0;
 
-    WriteReg("ArkEditorCapture", "IDC_COMBO_TILESZ", Buf);
+    WriteReg(PROGRAM_NAME, "IDC_COMBO_TILESZ", Buf);
+}
+
+int
+SaveVal(
+    const char* name,
+    int val
+)
+{
+    char Buf[255] = { 0 };
+
+    _itoa_s(val, Buf, sizeof(Buf), 10);
+
+    return WriteReg(PROGRAM_NAME, name, Buf);
 }
 
 void

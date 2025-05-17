@@ -11,11 +11,11 @@ typedef struct FVector
 	float z;
 }FVector;
 
-char
+int
 LoadDll(
 	void* hModule
 );
 
-char
+int
 UnloadDll(
 );
