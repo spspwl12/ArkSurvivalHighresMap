@@ -11,6 +11,13 @@ typedef struct FVector
 	float z;
 }FVector;
 
+typedef struct TArray
+{
+	void* AllocatorInstance;
+	signed int  ArrayNum;
+	signed int  ArrayMax;
+}TArray;
+
 int
 LoadDll(
 	void* hModule

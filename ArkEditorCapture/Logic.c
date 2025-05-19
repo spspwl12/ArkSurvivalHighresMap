@@ -345,17 +345,18 @@ WorkThread(
     HANDLE hProcess = (HANDLE)cParam.hProcess;
     HWND hDlg = (HWND)cParam.hDlg;
 
-    char BitmapPath[MAX_PATH];
-    char SavePath[MAX_PATH];
-    char Buf[128];
+    char UE4Path[MAX_PATH] = { 0 };
+    char BitmapPath[MAX_PATH] = { 0 };
+    char SavePath[MAX_PATH] = { 0 };
+    char Buf[MAX_PATH];
 
-    if (FALSE == RequestMessage(MODE_GET_PATH, MAX_PATH, BitmapPath))
+    if (FALSE == RequestMessage(MODE_GET_PATH, MAX_PATH, UE4Path))
     {
         MessageBox(hDlg, "Failed to get the ARK DevKit path.", "Error", MB_ICONEXCLAMATION);
         goto EXIT_THREAD;
     }
 
-    char* filename = strrchr(BitmapPath, '\\');
+    char* filename = strrchr(UE4Path, '\\');
 
     if (NULL == filename)
     {
@@ -365,7 +366,9 @@ WorkThread(
 
     *(filename + 1) = 0;
 
-    if (strlen(BitmapPath) + 9 >= MAX_PATH) // 00001.bmp
+    strcpy_s(BitmapPath, sizeof(UE4Path), UE4Path);
+
+    if (strlen(BitmapPath) + 13 >= MAX_PATH) // 00001.bmp 
     {
         MessageBox(hDlg, "The file path in ARK DevKit is too long. Please check it.", "Error", MB_ICONEXCLAMATION);
         goto EXIT_THREAD;
@@ -374,6 +377,12 @@ WorkThread(
     strcat_s(BitmapPath, sizeof(BitmapPath), "00001.bmp");
 
     GetDlgItemText(hDlg, IDC_EDIT_SVPATH, SavePath, sizeof(SavePath));
+
+    if (strlen(SavePath) + 13 >= MAX_PATH) // \AActors.txt
+    {
+        MessageBox(hDlg, "The save path is too long. Please check it.", "Error", MB_ICONEXCLAMATION);
+        goto EXIT_THREAD;
+    }
 
     DWORD attributes = GetFileAttributes(SavePath);
 
@@ -612,6 +621,25 @@ WorkThread(
         Extension, cParam.quality);
 
     saveTextToFile(z_string, zx_string, (int)strlen(zx_string));
+
+    {
+        char a = 0;
+
+        strcpy_s(Buf, sizeof(Buf), SavePath);
+        strcat_s(Buf, sizeof(Buf), "\\AActors.txt");
+
+        DeleteFile(Buf);
+
+        if (TRUE == SetMessage(MODE_GET_ACTORS, 1, &a))
+        {
+            char Buf2[MAX_PATH];
+
+            strcpy_s(Buf2, sizeof(Buf2), UE4Path);
+            strcat_s(Buf2, sizeof(Buf2), "AActors.txt");
+
+            MoveFile(Buf2, Buf);
+        }
+    }
 
     for (long ZoomLvl = 0; ZoomLvl <= Z_from; ++ZoomLvl, Zoom /= 2)
     {

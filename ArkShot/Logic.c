@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <process.h>
 #include <wchar.h>
+#include <stdio.h>
 
 #include "PE.h"
 #include "Pipe.h"
@@ -8,6 +9,9 @@
 #include "Memory.h"
 #include "Logic.h"
 #include "Hook.h"
+
+#define         REQUEST_CAPTURE     1
+#define         REQUEST_GETACTORS   2
 
 static void*    GEngine;
 static void*    GWorld;
@@ -22,15 +26,21 @@ static float    (*FEditorViewportClient_GetOrthoZoom)(void* _this);
 static void     (*FEditorViewportClient_SetOrthoZoom)(void* _this, float InOrthoZoom);
 static void     (*FEditorViewportClient_Invalidate)(void* _this);
 static void*    (*FSceneViewport_ResizeViewport)(void* _this);
+static void*    (*AActor_StaticClass)(void);
+static void*    (*AActor_GetActorLocation)(void* _this, void* vec);
+static void*    (*AActor_GetActorLabel)(void* _this);
+static void*    (*UGameplayStatics_GetAllActorsOfClass)(void* WorldContextObject, void* ActorClass, void* OutActors);
 static void     (*FScreenshotRequest_CreateViewportScreenShotFilename)(wchar_t** InOutFilename);
 static void     (*FDebug_EnsureFailed)(const char* Expr, const char* File, int Line, const wchar_t* Msg);
+static void     (*FDebug_AssertFailed)(const char* Expr, const char* File, int Line, const wchar_t* Msg);
 
 static char     cOriginalCode[10];
 
 static HANDLE   hProcess;
 static HMODULE  hModule;
 static HANDLE   hEvent;
-static char     CaptureSign;
+static int      RequestSign;
+static int      RequestType;
 static float    CaptureRes;
 static POINT    ViewportSize;
 
@@ -40,6 +50,10 @@ DECLARE_HOOK(FSceneViewport_ResizeViewport, void, void*, int, int, int);
 UINT WINAPI
 UnloadThread(
     LPVOID lpvParam
+);
+
+int
+ReuqestGetActors(
 );
 
 void 
@@ -89,6 +103,18 @@ Commnuication(
             SendPipeMessage(1 + dwSize, buf);
             return;
         }
+        case MODE_GET_ACTORS:
+        {
+            RequestSign = 1;
+            RequestType = REQUEST_GETACTORS;
+
+            // 끝날 때까지 대기 ( 동기 )
+            // Wait synchronously until complete.
+            WaitForSingleObject(hEvent, INFINITE);
+            ResetEvent(hEvent);
+            SendPipeMessage(1, buf);
+            return;
+        }
         case MODE_SET_XY:
         {
             FEditorViewportClient_SetViewLocation(FLEVC_GCLEVC, ptr);
@@ -124,11 +150,12 @@ Commnuication(
         }
         case MODE_CAPTURE:
         {
-            if (0 != CaptureSign)
+            if (0 != RequestSign)
                 return;
 
             memcpy(&CaptureRes, ptr + 16, 4);
-            CaptureSign = 1;
+            RequestSign = 1;
+            RequestType = REQUEST_CAPTURE;
 
             // 이미지 캡처가 끝날 때까지 대기 ( 동기 )
             // Wait synchronously until the image capture is complete.
@@ -157,30 +184,45 @@ Hook_UUnrealEdEngine_Tick(
 
     wchar_t* wsz = NULL;
 
-    if (CaptureSign == 1 && 
-        TRUE == WriteMemLong(hProcess, (ULONG_PTR)GScreenshotBitmapIndex, 0) &&
-        NULL != (wsz = (wchar_t*)malloc(sizeof(wchar_t) * 30)))
+    if (RequestSign == 1)
     {
-        swprintf_s(wsz, 30, L"HighResShot %g", CaptureRes);
-        UUnrealEdEngine_Exec(GEngine, GWorld, wsz);
+        switch (RequestType)
+        {
+        case REQUEST_CAPTURE:
+        {
+            if (TRUE == WriteMemLong(hProcess, (ULONG_PTR)GScreenshotBitmapIndex, 0) &&
+                NULL != (wsz = (wchar_t*)malloc(sizeof(wchar_t) * 30)))
+            {
+                swprintf_s(wsz, 30, L"HighResShot %g", CaptureRes);
+                UUnrealEdEngine_Exec(GEngine, GWorld, wsz);
+            }
+            break;
+        }
+        case REQUEST_GETACTORS:
+        {
+            ReuqestGetActors();
+            break;
+        }
+        }
+
     }
 
     // 첫 사이클은 HighResShot 명령어를 실행해 두 번째 사이클에 이미지를 출력
     // The first cycle executes the HighResShot command, and the second cycle outputs the image.
     UUnrealEdEngine_Tick_original(_this, DeltaSeconds, bIdleMode);
 
-    switch (CaptureSign)
+    switch (RequestSign)
     {
     case 1:
         if (NULL != wsz)
             free(wsz);
-        CaptureSign++;
+        RequestSign++;
         return;
     case 2:
         // 두 번째 사이클에 이미지 출력이 완료되어 (UUnrealEdEngine_Tick_original 안에 이미지 저장 로직이 들어가 있음) 대기 상태 해제.
         // The second cycle completes the image output, and the waiting state is released (the image saving logic is included in UUnrealEdEngine_Tick_original).
         SetEvent(hEvent);
-        CaptureSign = 0;
+        RequestSign = 0;
         return;
     }
 }
@@ -262,6 +304,18 @@ LoadDll(
                 WriteMemByte(hProcess, (ULONG_PTR)FScreenshotRequest_CreateViewportScreenShotFilename, 0xC3);
         }
 
+        // ?StaticClass@AActor@@SAPEAVUClass@@XZ
+        AActor_StaticClass = GetFunction((HMODULE)DLL, "StaticClass@AActor");
+
+        // ?GetAllActorsOfClass@UGameplayStatics@@SAXPEAVUObject@@V?$TSubclassOf@VAActor@@@@AEAV?$TArray@PEAVAActor@@VFDefaultAllocator@@@@@Z
+        UGameplayStatics_GetAllActorsOfClass = GetFunction((HMODULE)DLL, "GetAllActorsOfClass@");
+
+        // ?GetActorLocation@AActor@@QEBA?AVFVector@@XZ
+        AActor_GetActorLocation = GetFunction((HMODULE)DLL, "GetActorLocation@AActor");
+
+        // ?GetActorLabel@AActor@@QEBAAEBVFString@@XZ
+        AActor_GetActorLabel = GetFunction((HMODULE)DLL, "GetActorLabel@");
+
         // ?ResizeViewport@FSceneViewport@@EEAAXIIW4Type@EWindowMode@@HH@Z
         FSceneViewport_ResizeViewport = GetFunction((HMODULE)DLL, "ResizeViewport@");
 
@@ -299,6 +353,19 @@ LoadDll(
                 // 어셈블리어 코드 nop (0xC3) 을 삽입해 EnsureFailed 로직이 실행되는 것을을 막습니다.
                 // Insert the assembly code NOP (0xC3) to prevent the EnsureFailed logic from executing.
                 WriteMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, 0xC3);
+        }
+
+        // ?AssertFailed@FDebug@@SAXPEBD0HPEB_WZZ
+        if (FDebug_AssertFailed = GetFunction((HMODULE)DLL, "AssertFailed@FDebug"))
+        {
+            // AssertFailed 를 막는 이유 : IsInGameThread 결과가 false이기 때문에 외부 프로그램이 Exec 커맨드를 쓰면 ADK에서 오류가 발생해 종료되기 때문입니다.
+            // The reason for blocking AssertFailed: Since the result of IsInGameThread is false, if an external program executes an Exec command, 
+            // ADK will encounter an error and terminate.
+
+            if (ReadMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, cOriginalCode + 2))
+                // 어셈블리어 코드 nop (0xC3) 을 삽입해 EnsureFailed 로직이 실행되는 것을을 막습니다.
+                // Insert the assembly code NOP (0xC3) to prevent the EnsureFailed logic from executing.
+                WriteMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, 0xC3);
         }
     }
 
@@ -381,7 +448,7 @@ UnloadDll(
 
     // 캡처 로직이 대기상태인지 확인 후 후킹 했던 함수를 원상복구 시킵니다.
     // Check if the capture logic is in a waiting state, then restore the hooked function to its original state.
-    while (0 != CaptureSign)
+    while (0 != RequestSign)
         Sleep(100);
 
     if (UUnrealEdEngine_Tick_original)
@@ -397,6 +464,9 @@ UnloadDll(
 
     if (FDebug_EnsureFailed)
         WriteMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, *(cOriginalCode + 1));
+
+    if (FDebug_AssertFailed)
+        WriteMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, *(cOriginalCode + 2));
 
     // 자기 자신을 언로드 합니다.
     // Revert the injection and unload myself.
@@ -415,4 +485,60 @@ UnloadThread(
 
     FreeLibrary((HMODULE)lpvParam);
     return FALSE;
+}
+
+int
+ReuqestGetActors(
+)
+{
+    if (NULL == AActor_StaticClass ||
+        NULL == UGameplayStatics_GetAllActorsOfClass ||
+        NULL == AActor_GetActorLocation ||
+        NULL == AActor_GetActorLabel)
+        return 0;
+
+    void* AActorStaticClass = AActor_StaticClass();
+
+    if (NULL == AActorStaticClass)
+        return 0;
+
+    TArray Array = { 0 };
+
+    UGameplayStatics_GetAllActorsOfClass(GWorld, AActorStaticClass, &Array);
+
+    if (Array.ArrayNum <= 0)
+        return 0;
+
+    FILE* fp;
+    errno_t err = _wfopen_s(&fp, L"AActors.txt", L"w");
+
+    if (err != 0 || fp == NULL)
+        return 0;
+
+    for (int i = 0; i < Array.ArrayNum; ++i)
+    {
+        void* AActor = (void*)((ULONG_PTR*)Array.AllocatorInstance)[i];
+
+        if (NULL == AActor)
+            continue;
+
+        FVector vec;
+
+        AActor_GetActorLocation(AActor, &vec);
+
+        void* FStr = AActor_GetActorLabel(AActor);
+
+        if (NULL == FStr)
+            continue;
+
+        wchar_t* name;
+
+        if (0 == (name = (void*)ReadMemPtr(hProcess, (ULONG_PTR)FStr)))
+            continue;
+
+        fwprintf_s(fp, L"%s,%.5f,%.5f,%.5f\n", name, vec.x, vec.y, vec.z);
+    }
+
+    fclose(fp);
+    return 1;
 }
