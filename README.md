@@ -51,7 +51,10 @@
 ## 작동 화면
 ![Animation4](https://github.com/user-attachments/assets/d3f26cb1-082b-49bd-a1eb-9329839bd25b)
 
-
+## ARK DevKit 설치방법
+1. 에픽게임즈 사이트에 들어가 ( https://store.epicgames.com/ko/p/ark--modkit ) 받기 버튼을 누릅니다. ( 회원가입이 필요한 경우 가입합니다. )
+2. ARK Modkit(UE4) 를 설치합니다.
+   
 ## 타일맵 만들기
 1. Ark Devkit에서 타일맵을 만들 맵을 불러옵니다. ( 많은 시간 소요 )
    - 공식 맵은 Game/Maps/ 폴더 안에 있고<br>모드 맵은 Game/Mods/ 폴더 안에 있습니다.
