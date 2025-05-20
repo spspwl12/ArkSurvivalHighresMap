@@ -8,6 +8,7 @@
 이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.
 - minhook ( https://github.com/TsudaKageyu/minhook ) => 정적 라이브러리, 언리얼 엔진 함수를 후킹할 떄 쓰입니다.<br>
 - libwebp ( https://github.com/webmproject/libwebp ) => 정적 라이브러리, bmp 파일을 webp 확장자로 인코딩할 때 쓰입니다.<br>
+- libjpeg ( https://github.com/libjpeg-turbo/libjpeg-turbo ) => 정적 라이브러리, bmp 파일을 jpg 확장자로 인코딩할 때 쓰입니다.<br>
 
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
@@ -15,6 +16,7 @@
 - 다양한 이미지 포맷 지원: bmp뿐만 아니라 jpg, gif, png, webp도 지원합니다.
 - 타일 크기 256 ~ 16384 지원: 256 보다 큰 타일을 고르면 프로그램이 알아서 잘라줍니다.
 - 셀프 언로드 기능: 원격 프로그램이 종료되면, DLL은 알아서 언로드 됩니다.
+- 오브젝트 위치 저장: 맵에 있는 오브젝트의 위치를 저장해 마커 등 활용이 가능합니다.
   
 ## 컴파일 및 실행 방법
 1. Visual Studio 2022 를 다운로드 합니다. ( https://visualstudio.microsoft.com/ko/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false )
