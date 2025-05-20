@@ -44,7 +44,10 @@
 9. 컴파일이 완료되면, 프로젝트 폴더안의 Build 폴더에 있는 ArkEditorCapture.exe 를 실행합니다.
 10. ARK DevKit을 실행합니다.
 11. ArkEditorCapture.exe 의 Open 버튼을 누릅니다.
+![Animation](https://github.com/user-attachments/assets/eb220263-28c1-416d-95a9-14fdfdbe901a)
 
+## 타일 맵을 만들기
+1. 
 ## 작동 화면
 
 
