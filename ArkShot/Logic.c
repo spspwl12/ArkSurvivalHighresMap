@@ -10,9 +10,6 @@
 #include "Logic.h"
 #include "Hook.h"
 
-#define         REQUEST_CAPTURE     1
-#define         REQUEST_GETACTORS   2
-
 static void*    GEngine;
 static void*    GWorld;
 static void*    FLEVC_GCLEVC; // FLevelEditorViewportClient_GCurrentLevelEditingViewportClient
@@ -109,7 +106,7 @@ Commnuication(
             RequestType = REQUEST_GETACTORS;
 
             // 끝날 때까지 대기 ( 동기 )
-            // Wait synchronously until complete.
+            // Wait synchronously until it completes.
             WaitForSingleObject(hEvent, INFINITE);
             ResetEvent(hEvent);
             SendPipeMessage(1, buf);
@@ -497,14 +494,22 @@ ReuqestGetActors(
         NULL == AActor_GetActorLabel)
         return 0;
 
-    void* AActorStaticClass = AActor_StaticClass();
+    void* AActorStaticClass;
+
+    EXCEPTION_MACRO(
+        AActorStaticClass = AActor_StaticClass();,
+        return 0;
+    );
 
     if (NULL == AActorStaticClass)
         return 0;
 
     TArray Array = { 0 };
 
-    UGameplayStatics_GetAllActorsOfClass(GWorld, AActorStaticClass, &Array);
+    EXCEPTION_MACRO(
+        UGameplayStatics_GetAllActorsOfClass(GWorld, AActorStaticClass, &Array); ,
+        return 0;
+    );
 
     if (Array.ArrayNum <= 0)
         return 0;
@@ -517,16 +522,28 @@ ReuqestGetActors(
 
     for (int i = 0; i < Array.ArrayNum; ++i)
     {
-        void* AActor = (void*)((ULONG_PTR*)Array.AllocatorInstance)[i];
+        void* AActor;
+
+        if (0 == (AActor = (void*)ReadMemPtr(hProcess, 
+            (ULONG_PTR*)Array.AllocatorInstance + i)))
+            continue;
 
         if (NULL == AActor)
             continue;
 
         FVector vec;
 
-        AActor_GetActorLocation(AActor, &vec);
+        EXCEPTION_MACRO(
+            AActor_GetActorLocation(AActor, &vec); ,
+            goto ERROR_RESULT;
+        );
 
-        void* FStr = AActor_GetActorLabel(AActor);
+        void* FStr;
+
+        EXCEPTION_MACRO(
+            FStr = AActor_GetActorLabel(AActor); ,
+            goto ERROR_RESULT;
+        );
 
         if (NULL == FStr)
             continue;
@@ -538,6 +555,8 @@ ReuqestGetActors(
 
         fwprintf_s(fp, L"%s,%.5f,%.5f,%.5f\n", name, vec.x, vec.y, vec.z);
     }
+
+ERROR_RESULT:
 
     fclose(fp);
     return 1;

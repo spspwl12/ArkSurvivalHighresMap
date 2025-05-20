@@ -493,6 +493,12 @@ WorkThread(
             else
                 ++cnt;
 
+            if (cnt >= 100)
+            {
+                MessageBox(hDlg, "Failed to automatically adjust the viewport rendering size in ARK DevKit.", "Error", MB_ICONEXCLAMATION);
+                goto EXIT_THREAD;
+            }
+
             memcpy(&xy, Buf, sizeof(POINT));
 
             // auto sizing window
