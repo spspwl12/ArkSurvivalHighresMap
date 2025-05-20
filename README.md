@@ -11,18 +11,13 @@
 - libjpeg ( https://github.com/libjpeg-turbo/libjpeg-turbo ) => 정적 라이브러리, bmp 파일을 jpg 확장자로 인코딩할 때 쓰입니다.<br>
 
 ## 미리보기
-### Extinction
-http://138.2.51.230:17875/Extinction/
-### TheIsland
-http://138.2.51.230:17875/TheIsland/
-### Ragnarok
-http://138.2.51.230:17875/Ragnarok/
-### ScorchedEarth
-http://138.2.51.230:17875/ScorchedEarth/
-### Fjordur
-http://138.2.51.230:17875/Fjordur/ <br>
-http://138.2.51.230:17875/Fjordur_Asgard/ <br>
-http://138.2.51.230:17875/Fjordur_Vanaheim/ <br>
+### <a href="http://138.2.51.230:17875/Extinction/" target="_blank">Extinction</a>
+### <a href="http://138.2.51.230:17875/TheIsland/" target="_blank">TheIsland</a>
+### <a href="http://138.2.51.230:17875/Ragnarok/" target="_blank">Ragnarok</a>
+### <a href="http://138.2.51.230:17875/ScorchedEarth/" target="_blank">ScorchedEarth</a>
+### <a href="http://138.2.51.230:17875/Fjordur/" target="_blank">Fjordur</a>
+<a href="http://138.2.51.230:17875/Fjordur_Asgard/" target="_blank">Fjordur_Asgard</a><br>
+<a href="http://138.2.51.230:17875/Fjordur_Vanaheim/" target="_blank">Fjordur_Vanaheim</a><br>
 
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
