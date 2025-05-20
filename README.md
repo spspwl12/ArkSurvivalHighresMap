@@ -47,7 +47,14 @@
 ![Animation](https://github.com/user-attachments/assets/eb220263-28c1-416d-95a9-14fdfdbe901a)
 
 ## 타일 맵을 만들기
-1. 
+1. Ark Devkit에서 타일맵을 만들 맵을 불러옵니다.
+   - 공식 맵은 Game/Maps/ 폴더 안에 있고<br>모드 맵은 Game/Mods/ 폴더 안에 있습니다.
+   - 여러 파일 중, 맵 이름에 가장 근접한 파일을 고릅니다.<br>
+       Aberration -> Game/Maps/Aberration/Aberration_P<br>
+       Genesis2 -> Game/Maps/Genesis2/Gen2<br>
+       Valguero -> Game/Mods/Valguero/Valguero_P<br>
+   ![Animation](https://github.com/user-attachments/assets/a66c5372-48b5-4164-892b-7638d4c64301)
+
 ## 작동 화면
 
 
