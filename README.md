@@ -21,6 +21,8 @@ http://138.2.51.230:17875/Ragnarok/
 http://138.2.51.230:17875/ScorchedEarth/
 ### Fjordur
 http://138.2.51.230:17875/Fjordur/
+http://138.2.51.230:17875/Fjordur_Asgard/
+http://138.2.51.230:17875/Fjordur_Vanaheim/
 
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
