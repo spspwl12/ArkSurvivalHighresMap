@@ -45,7 +45,9 @@
 10. ARK DevKit을 실행합니다.
 11. ArkEditorCapture.exe 의 Open 버튼을 누릅니다.<br>
 ![image](https://github.com/user-attachments/assets/097c288a-d346-42c5-8974-c24a50e78753)
-
+12. 타일맵이 저장될 폴더를 선택합니다.
+13. 적당한 타일 사이즈를 선택합니다. ( 크기가 커질수록 고사양 요구 )
+14. StartCapture 버튼을 클릭합니다. ( 뷰포트 렌더링 사이즈가 256 x 256 아닐경우 자동으로 조정합니다. )
 ## 작동 화면
 ![Animation4](https://github.com/user-attachments/assets/d3f26cb1-082b-49bd-a1eb-9329839bd25b)
 
@@ -53,14 +55,14 @@
 ## 타일맵 만들기
 1. Ark Devkit에서 타일맵을 만들 맵을 불러옵니다. ( 많은 시간 소요 )
    - 공식 맵은 Game/Maps/ 폴더 안에 있고<br>모드 맵은 Game/Mods/ 폴더 안에 있습니다.
-   - 여러 파일 중, 맵 이름에 가장 근접한 파일을 고릅니다.<br>
+   - 여러개의 파일 중, 맵 이름에 가장 근접한 파일을 고릅니다.<br>
        Aberration -> Game/Maps/Aberration/Aberration_P<br>
        Genesis2 -> Game/Maps/Genesis2/Gen2<br>
        Valguero -> Game/Mods/Valguero/Valguero_P<br>
    ![Animation](https://github.com/user-attachments/assets/a66c5372-48b5-4164-892b-7638d4c64301)
 2. 모든 레벨을 불러옵니다.<br>
    ![Animation2](https://github.com/user-attachments/assets/aa63dc5e-3f8a-431d-b407-ab0816eb8f07)
-3. 우측 하단에 **셰이더 컴파일중**이 있으면 기다려야 합니다 ( 매우 오랜 시간 소요 )<br>
+3. 우측 하단에 **셰이더 컴파일중**이 있으면 기다려야 합니다. ( 매우 오랜 시간 소요 )<br>
    ![Animation3](https://github.com/user-attachments/assets/82002671-a480-4584-b3b7-ad4f1bceb24c)
 4. 
 
