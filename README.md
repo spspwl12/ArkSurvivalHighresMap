@@ -13,10 +13,11 @@
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
 - 확대 레벨 설정 가능: 사용자가 직접 확대 최대치를 설정할 수 있습니다.
-- 다양한 이미지 포맷 지원: bmp뿐만 아니라 jpg, gif, png, webp도 지원합니다.
 - 타일 크기 256 ~ 16384 지원: 256 보다 큰 타일을 고르면 프로그램이 알아서 잘라줍니다.
+- 다양한 이미지 포맷 지원: bmp뿐만 아니라 jpg, gif, png, webp도 지원합니다.
+- 이미지 변환 멀티스레드 지원: 더 빠른 속도로 이미지 변환이 가능합니다.
 - 셀프 언로드 기능: 원격 프로그램이 종료되면, DLL은 알아서 언로드 됩니다.
-- 오브젝트 위치 저장: 맵에 있는 오브젝트의 위치를 저장해 마커 등 활용이 가능합니다.
+- 오브젝트(AActor) 위치 저장: 맵에 있는 오브젝트의 위치를 저장해 마커 등 활용이 가능합니다.
   
 ## 컴파일 및 실행 방법
 1. Visual Studio 2022 를 다운로드 합니다. ( https://visualstudio.microsoft.com/ko/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false )
