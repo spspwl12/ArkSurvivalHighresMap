@@ -10,6 +10,18 @@
 - libwebp ( https://github.com/webmproject/libwebp ) => 정적 라이브러리, bmp 파일을 webp 확장자로 인코딩할 때 쓰입니다.<br>
 - libjpeg ( https://github.com/libjpeg-turbo/libjpeg-turbo ) => 정적 라이브러리, bmp 파일을 jpg 확장자로 인코딩할 때 쓰입니다.<br>
 
+## 미리보기
+### Extinction
+http://138.2.51.230:17875/Extinction/
+### TheIsland
+http://138.2.51.230:17875/TheIsland/
+### Ragnarok
+http://138.2.51.230:17875/Ragnarok/
+### ScorchedEarth
+http://138.2.51.230:17875/ScorchedEarth/
+### Fjordur
+http://138.2.51.230:17875/Fjordur/
+
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
 - 확대 레벨 설정 가능: 사용자가 직접 확대 최대치를 설정할 수 있습니다.
@@ -34,7 +46,8 @@
 8. F7를 눌러 컴파일 합니다.
 9. 컴파일이 완료되면, 프로젝트 폴더안의 Build 폴더에 있는 ArkEditorCapture.exe 를 실행합니다.
 10. ARK DevKit을 실행합니다.
-11. ArkEditorCapture.exe 의 Dll Path 란에 ... 버튼을 눌러 프로젝트 폴더안의 Build 폴더에 있는 ArkShot.dll 를 선택합니다.
+11. ArkEditorCapture.exe 의 Open 버튼을 누릅니다.
+
 ## 작동 화면
 
 
