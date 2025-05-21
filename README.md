@@ -48,6 +48,7 @@
 12. 타일맵이 저장될 폴더를 선택합니다.
 13. 적당한 타일 사이즈를 선택합니다. ( 크기가 커질수록 고사양 요구 )
 14. StartCapture 버튼을 클릭합니다. ( 뷰포트 렌더링 사이즈가 256 x 256 아닐경우 자동으로 조정합니다. )
+    
 ## 작동 화면
 ![Animation4](https://github.com/user-attachments/assets/d3f26cb1-082b-49bd-a1eb-9329839bd25b)
 
@@ -67,8 +68,15 @@
    ![Animation2](https://github.com/user-attachments/assets/aa63dc5e-3f8a-431d-b407-ab0816eb8f07)
 3. 우측 하단에 **셰이더 컴파일중**이 있으면 기다려야 합니다. ( 매우 오랜 시간 소요 )<br>
    ![Animation3](https://github.com/user-attachments/assets/82002671-a480-4584-b3b7-ad4f1bceb24c)
-4. 
-
-
+4. Alt+4 또는 라이팅 포함을 누릅니다
+   ![Animation5](https://github.com/user-attachments/assets/b05246ac-afc8-40a8-8f71-451370fcb882)
+5. Alt+G 또는 원근을 누르고 G 또는 게임 뷰를 눌러 네모난 선이 안 보이도록 합니다. 그리고 Alt+J 또는 상단을 누릅니다. 
+   ![Animation6](https://github.com/user-attachments/assets/ec763ba5-0bcd-4e56-9ac7-06d6ae0eea05)
+6. 맵이 너무 밝으면 **DirectionalLight**를 검색해 Intensity 값을 조절합니다. ( ※ DirectionalLight가 여러개인경우, 옆에 눈 아이콘을 클릭해 어두워 지는지 확인 후 Intensity 값을 조절합니다. )
+   ![Animation7](https://github.com/user-attachments/assets/cecc2af1-2a48-4d83-a412-1fa65c58040a)
+7. 씬 아웃라이너에서 아무거나 선택한 다음 오른쪽 클릭 후 모두 선택을 누릅니다.
+   ![Animation8](https://github.com/user-attachments/assets/d7962cb6-20e7-4718-9dde-9c89a30cedad)
+8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.
+   ![Animation9](https://github.com/user-attachments/assets/cec65d45-56b1-4248-bc51-bc43945381f6)
 
 
