@@ -88,3 +88,42 @@
     ![Animation10](https://github.com/user-attachments/assets/4ef76d1e-bffb-4803-8779-a4fe1ccf8f07)
 12. 맵이 한번에 안보인다면, 스크롤을 조정하여 한번에 보이게끔 설정합니다
     ![Animation11](https://github.com/user-attachments/assets/ca1c1238-11ed-40bc-beba-1f719ac16815)
+
+## 타일맵 제작 팁 ( ARK Devkit 기준 )
+### 에픽게임즈 런처 없이 언리얼 실행 방법
+윈도우키 + R 을 입력해 실행창이 뜨면 아래 문장을 입력후 엔터
+- UE4 : "%ProgramFiles%\Epic Games\ARKEditor\Engine\Binaries\Win64\UE4Editor.exe" ShooterGame/ShooterGame.uproject
+- UE5 : "%ProgramFiles%\Epic Games\ARKDevkit\Engine\Binaries\Win64\ShooterGameEditor.exe"  ShooterGame/ShooterGame.uproject
+
+### 오브젝트에 사각형 선이 보일 시
+- Alt+G(원근) -> G(게임뷰) 체크 해제 -> Alt+J(상단) 
+
+### 익스팅션 맵 한정 다리에 붙어있는 유리가 검은색으로 표시될 경우
+- 왼쪽 위 레벨 창에서 Ext_Proxymeshes 찾은 후 왼쪽 눈 아이콘 클릭해 숨기기
+
+### 맵 밝기가 너무 밝은 경우
+- DirectionalLight 검색 후 Intensity 값 조절
+- SkyLight 검색 후 끄기
+
+### 아일랜드 맵 화산 옆 반짝거리는 오브젝트 숨기기
+- 씬 아웃라이너에 BP_VolcanicLightning 검색 후 숨기기 ( 단축키 H )
+
+### 탐험 노트( Explorer Note ) 또는 일부 오브젝트가 안 보일시
+- 모든 리소스 선택 후 (Ctrl+A) 다음 디테일 탭에서 Force Infinite Draw Distance 검색 후 체크해야 일부 오브젝트 보임
+
+### 맵 그림자가 체크무늬처럼 보기 싫을 때 해결 방법
+- 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 Allow Height Field Shadow 검색 후 체크 해제
+
+### 맵에 구름 그림자가 전역에 표시될떄 해결 방법
+- 뷰포트에 표시 -> True Sky 문구 들어간 옵션 체크 해제
+
+### 물 색깔이 마음에 안 들 때
+- 물 오브젝트 클릭 -> Top Material 변경( 미리보기를 더블클릭해 색깔 사용자 지정할 수도 있음 )
+
+### 원근 시점으로는 나무, 잔디가 보이는데 상단 시점으로 변경하면 안보이는 이유
+![a46c2180e0feede83d029a95ae5c3d1db3a58793](https://github.com/user-attachments/assets/fd6b97c5-2ab0-45d2-90ed-dcc572d1d77a)
+- InstancedFoliageActor 오브젝트가 상단으로는 안 보이는데 해당 옵션 ( Foliage Types )은 ARK Devkit에서는 안 보입니다. 해결 불가
+- 아크 전용 에디터로 열지 말고, 언리얼엔진4 에디터로 열면 해결 가능 기대
+  
+### 해당 프로그램으로 만들어진 타일맵 사진에 찍힌 실제 오브젝트 위치를 Leaflet 마커를 이용해 표시하는 법
+- [Extinction](http://138.2.51.230:17875/Extinction/) 접속 후 오른쪽 마우스 클릭해서 소스코드 보기 후 참고
