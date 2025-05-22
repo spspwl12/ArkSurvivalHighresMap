@@ -9,9 +9,7 @@ BOOL APIENTRY DllMain(HMODULE   hModule,
     {
         case DLL_PROCESS_ATTACH:
         {
-            if (FALSE == LoadDll(hModule))
-                UnloadDll();
-
+            LoadDll(hModule);
             return TRUE;
         }
         case DLL_THREAD_ATTACH:

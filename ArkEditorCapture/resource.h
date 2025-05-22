@@ -14,6 +14,7 @@
 #define IDC_BUTTON_START                1007
 #define IDC_BUTTON_ZEROXY               1008
 #define IDC_BUTTON_ZHALF                1009
+#define IDC_BUTTON_AUTOSET              1009
 #define IDC_BUTTON_ZORI                 1010
 #define IDC_COMBO_EXTIMG                1011
 #define IDC_COMBO_TILESZ                1012
@@ -33,10 +34,9 @@
 #define IDC_WHI_H                       1026
 #define IDC_WHI_I                       1027
 #define IDC_WHI_W                       1028
-#define IDC_EDIT_QULITY                 1028
-#define IDC_zzz_END_CTRL                1029
-#define IDC_SLIDER1                     1029
-#define IDC_SLIDER_QULITY               1029
+#define IDC_EDIT_QULITY                 1029
+#define IDC_SLIDER_QULITY               1030
+#define IDC_zzz_END_CTRL                1031
 
 // Next default values for new objects
 // 

@@ -109,7 +109,7 @@ DlgProc(
                     SetButtonAction(0);
                     break;
                 }
-                case IDC_BUTTON_ZHALF:
+                case IDC_BUTTON_ZEROXY:
                 {
                     if (FALSE == bEnable &&
                         FALSE == DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
@@ -118,34 +118,13 @@ DlgProc(
                     SetButtonAction(1);
                     break;
                 }
-                case IDC_BUTTON_CENTER:
+                case IDC_BUTTON_AUTOSET:
                 {
                     if (FALSE == bEnable &&
                         FALSE == DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
                         return (INT_PTR)FALSE;
 
                     SetButtonAction(2);
-                    break;
-                }
-                case IDC_BUTTON_ZEROXY:
-                {
-                    if (FALSE == bEnable &&
-                        FALSE == DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
-                        return (INT_PTR)FALSE;
-
-                    SetButtonAction(3);
-                    break;
-                }
-                case IDC_BUTTON_SETXYTO:
-                {
-                    CopyTextDlgItem(hDlg, IDC_EDIT_X1, IDC_EDIT_X2);
-                    CopyTextDlgItem(hDlg, IDC_EDIT_Y1, IDC_EDIT_Y2);
-                    break;
-                }
-                case IDC_BUTTON_SETXYFR:
-                {
-                    CopyTextDlgItem(hDlg, IDC_EDIT_X1, IDC_EDIT_X3);
-                    CopyTextDlgItem(hDlg, IDC_EDIT_Y1, IDC_EDIT_Y3);
                     break;
                 }
                 case IDC_COMBO_EXTIMG:

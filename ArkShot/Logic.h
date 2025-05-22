@@ -9,13 +9,6 @@ returnType __fastcall Hook_ ## name(__VA_ARGS__)
 
 #define EXCEPTION_MACRO(src, ex)  __try{src}__except (EXCEPTION_EXECUTE_HANDLER){ex}
 
-typedef struct FVector
-{
-	float x;
-	float y;
-	float z;
-}FVector;
-
 typedef struct TArray
 {
 	void* AllocatorInstance;

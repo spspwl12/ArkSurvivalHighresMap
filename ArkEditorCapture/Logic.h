@@ -2,6 +2,7 @@
 
 #define ATOMIC_FN       1.3333333333333E-04f
 #define CORRECTION      0.0000001f
+#define SAVETILESIZE    256
 
 typedef struct StartCaptureParameter {
     void* hProcess;
@@ -9,12 +10,8 @@ typedef struct StartCaptureParameter {
     void* hDlg;
     int Status;
     int quality;
+    int UEVersion;
 }CParam;
-
-typedef struct Vector2D {
-    float x;
-    float y;
-} Vec2D;
 
 int
 OpenProcessProc(

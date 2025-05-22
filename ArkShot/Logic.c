@@ -21,7 +21,7 @@ static void*    (*FEditorViewportClient_GetViewLocation)(void* _this);
 static void     (*FEditorViewportClient_SetViewLocation)(void* _this, void* Position);
 static float    (*FEditorViewportClient_GetOrthoZoom)(void* _this);
 static void     (*FEditorViewportClient_SetOrthoZoom)(void* _this, float InOrthoZoom);
-static void     (*FEditorViewportClient_Invalidate)(void* _this);
+static void     (*FEditorViewportClient_Invalidate)(void* _this, char bInvalidateChildViews, char bInvalidateHitProxies);
 static void*    (*FSceneViewport_ResizeViewport)(void* _this);
 static void*    (*AActor_StaticClass)(void);
 static void*    (*AActor_GetActorLocation)(void* _this, void* vec);
@@ -40,9 +40,16 @@ static int      RequestSign;
 static int      RequestType;
 static float    CaptureRes;
 static POINT    ViewportSize;
+static int      UEVersion;
 
 DECLARE_HOOK(UUnrealEdEngine_Tick, void, void*, float, char);
 DECLARE_HOOK(FSceneViewport_ResizeViewport, void, void*, int, int, int);
+
+void
+Commnuication(
+    int size,
+    char* buf
+);
 
 UINT WINAPI
 UnloadThread(
@@ -52,6 +59,85 @@ UnloadThread(
 int
 ReuqestGetActors(
 );
+
+int
+InitFunctions(
+    int ver,
+    const char* prefix
+);
+
+int
+LoadDll(
+    void* _hModule
+)
+{
+    hModule = _hModule;
+
+    // Init hEvent
+    {
+        if (NULL == (hEvent = CreateEvent(NULL, TRUE, FALSE, NULL)))
+            return FALSE;
+    }
+
+    // Create Pipe
+    {
+        if (FALSE == StartPipeComm(Commnuication))
+        {
+            CloseHandle(hEvent);
+            return FALSE;
+        }
+
+        SetDisconnectedPipeFunc((void*)UnloadDll);
+    }
+
+    if (NULL == (hProcess = GetCurrentProcess()))
+    {
+        StopPipeComm();
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+int
+UnloadDll(
+)
+{
+    if (NULL != hEvent)
+    {
+        SetEvent(hEvent);
+        CloseHandle(hEvent);
+    }
+
+    // 캡처 로직이 대기상태인지 확인 후 후킹 했던 함수를 원상복구 시킵니다.
+    // Check if the capture logic is in a waiting state, then restore the hooked function to its original state.
+    while (0 != RequestSign)
+        Sleep(100);
+
+    if (UUnrealEdEngine_Tick_original)
+        UnHookFunction(UUnrealEdEngine_Tick);
+
+    if (FSceneViewport_ResizeViewport_original)
+        UnHookFunction(FSceneViewport_ResizeViewport);
+
+    StopPipeComm();
+
+    if (FScreenshotRequest_CreateViewportScreenShotFilename)
+        WriteMemByte(hProcess, (ULONG_PTR)FScreenshotRequest_CreateViewportScreenShotFilename, *(cOriginalCode + 0));
+
+    if (FDebug_EnsureFailed)
+        WriteMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, *(cOriginalCode + 1));
+
+    if (FDebug_AssertFailed)
+        WriteMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, *(cOriginalCode + 2));
+
+    // 자기 자신을 언로드 합니다.
+    // Revert the injection and unload myself.
+    _beginthreadex(NULL, 0, UnloadThread,
+        (PVOID)hModule, 0, NULL);
+
+    return TRUE;
+}
 
 void 
 Commnuication(
@@ -70,9 +156,20 @@ Commnuication(
             if (NULL == pVec)
                 goto ERROR_RESULT;
 
-            memcpy(ptr, pVec, 12);
+            int readSize = 0;
 
-            SendPipeMessage(1 + 12, buf);
+            if (UEVersion == 4)
+                readSize = sizeof(FVector);
+
+            if (UEVersion == 5)
+                readSize = sizeof(FVectorD);
+            
+            if (0 == readSize)
+                goto ERROR_RESULT;
+
+            memcpy(ptr, pVec, readSize);
+
+            SendPipeMessage(1 + readSize, buf);
             return;
         }
         case MODE_GET_ZOOM:
@@ -114,8 +211,19 @@ Commnuication(
         }
         case MODE_SET_XY:
         {
+            int readSize = 0;
+
+            if (UEVersion == 4)
+                readSize = sizeof(FVector);
+
+            if (UEVersion == 5)
+                readSize = sizeof(FVectorD);
+
+            if (readSize != size - 1)
+                goto ERROR_RESULT;
+
             FEditorViewportClient_SetViewLocation(FLEVC_GCLEVC, ptr);
-            FEditorViewportClient_Invalidate(FLEVC_GCLEVC);
+            FEditorViewportClient_Invalidate(FLEVC_GCLEVC, 0, 0);
 
             SendPipeMessage(1, buf);
             return;
@@ -127,30 +235,61 @@ Commnuication(
             memcpy(&fval, ptr, 4);
 
             FEditorViewportClient_SetOrthoZoom(FLEVC_GCLEVC, fval);
-            FEditorViewportClient_Invalidate(FLEVC_GCLEVC);
+            FEditorViewportClient_Invalidate(FLEVC_GCLEVC, 0, 0);
+
+            SendPipeMessage(1, buf);
+            return;
+        }
+        case MODE_SET_VER:
+        {
+            UEVersion = ptr[0];
+            char size = ptr[1];
+            char* prefix = &ptr[2];
+
+            prefix[size] = 0;
+
+            if (FALSE == InitFunctions(UEVersion, prefix))
+            {
+                StopPipeComm();
+                goto ERROR_RESULT;
+            }
 
             SendPipeMessage(1, buf);
             return;
         }
         case MODE_SET_XYZZ_CAPTURE:
         {
+            int readSize = 0;
+
+            if (UEVersion == 4)
+                readSize = sizeof(FVector);
+
+            if (UEVersion == 5)
+                readSize = sizeof(FVectorD);
+
             float fval;
 
-            memcpy(&fval, ptr + 12, 4);
+            memcpy(&fval, ptr + readSize, sizeof(float));
+
+            // Zoom
+            readSize += 4;
+
+            memcpy(&CaptureRes, ptr + readSize, 4);
+
+            // CaptureSize
+            readSize += 4;
+
+            if (readSize != size - 1)
+                goto ERROR_RESULT;
 
             FEditorViewportClient_SetViewLocation(FLEVC_GCLEVC, ptr);
             FEditorViewportClient_SetOrthoZoom(FLEVC_GCLEVC, fval);
 
-            FEditorViewportClient_Invalidate(FLEVC_GCLEVC);
+            FEditorViewportClient_Invalidate(FLEVC_GCLEVC, 0, 0);
 
-            // no return;
-        }
-        case MODE_CAPTURE:
-        {
             if (0 != RequestSign)
                 return;
 
-            memcpy(&CaptureRes, ptr + 16, 4);
             RequestSign = 1;
             RequestType = REQUEST_CAPTURE;
 
@@ -187,12 +326,15 @@ Hook_UUnrealEdEngine_Tick(
         {
         case REQUEST_CAPTURE:
         {
-            if (TRUE == WriteMemLong(hProcess, (ULONG_PTR)GScreenshotBitmapIndex, 0) &&
-                NULL != (wsz = (wchar_t*)malloc(sizeof(wchar_t) * 30)))
+            if (NULL != GScreenshotBitmapIndex)
+                WriteMemLong(hProcess, (ULONG_PTR)GScreenshotBitmapIndex, 0);
+
+            if (NULL != (wsz = (wchar_t*)malloc(sizeof(wchar_t) * 50)))
             {
-                swprintf_s(wsz, 30, L"HighResShot %g", CaptureRes);
+                swprintf_s(wsz, 50, L"HighResShot %g", CaptureRes);
                 UUnrealEdEngine_Exec(GEngine, GWorld, wsz);
             }
+
             break;
         }
         case REQUEST_GETACTORS:
@@ -239,238 +381,6 @@ Hook_FSceneViewport_ResizeViewport(
 
     ViewportSize.x = NewSizeX;
     ViewportSize.y = NewSizeY;
-}
-
-int
-LoadDll(
-    void* _hModule
-)
-{
-    hModule = _hModule;
-
-    // Init hEvent
-    {
-        if (NULL == (hEvent = CreateEvent(NULL, TRUE, FALSE, NULL)))
-            return FALSE;
-    }
-
-    // Create Pipe
-    {
-        if (FALSE == StartPipeComm(Commnuication))
-            return FALSE;
-
-        SetDisconnectedPipeFunc((void*)UnloadDll);
-    }
-
-    if (NULL == (hProcess = GetCurrentProcess()))
-        return FALSE;
-
-    // ----------------------UE4Editor-Engine.dll----------------------
-    {
-        DWORD_PTR DLL = (DWORD_PTR)GetModuleHandle("UE4Editor-Engine.dll");
-
-        if (0 == DLL)
-            return FALSE;
-
-        // ?GEngine@@3PEAVUEngine@@EA
-        GEngine = GetFunction((HMODULE)DLL, "GEngine@");
-
-        if (0 == (GEngine = (void*)ReadMemPtr(hProcess, (ULONG_PTR)GEngine)))
-            return FALSE;
-
-        // ?? 왜 0x38 을 더해야 하는지 모르겠습니다.
-        // I don't understand why 0x38 needs to be added.
-        GEngine = (char*)GEngine + 0x38;
-
-        // ?GWorld@@3VUWorldProxy@@A
-        GWorld = GetFunction((HMODULE)DLL, "GWorld@");
-
-        if (0 == (GWorld = (void*)ReadMemPtr(hProcess, (ULONG_PTR)GWorld)))
-            return FALSE;
-
-        // ?CreateViewportScreenShotFilename@FScreenshotRequest@@SAXAEAVFString@@@Z
-        if (FScreenshotRequest_CreateViewportScreenShotFilename =
-            GetFunction((HMODULE)DLL, "CreateViewportScreenShotFilename@"))
-        {
-            // CreateViewportScreenShotFilename 를 막는 이유 : 이미지 출력 경로가 의도한 대로 하기 위해서입니다.
-            // The reason for blocking CreateViewportScreenShotFilename: To ensure that the image output path follows the intended direction.
-
-            if (ReadMemByte(hProcess, (ULONG_PTR)FScreenshotRequest_CreateViewportScreenShotFilename, cOriginalCode + 0))
-                // 어셈블리어 코드 nop (0xC3) 을 삽입해 CreateViewportScreenShotFilename 로직이 실행되는 것을을 막습니다.
-                // Insert the assembly code NOP (0xC3) to prevent the CreateViewportScreenShotFilename logic from executing.
-                WriteMemByte(hProcess, (ULONG_PTR)FScreenshotRequest_CreateViewportScreenShotFilename, 0xC3);
-        }
-
-        // ?StaticClass@AActor@@SAPEAVUClass@@XZ
-        AActor_StaticClass = GetFunction((HMODULE)DLL, "StaticClass@AActor");
-
-        // ?GetAllActorsOfClass@UGameplayStatics@@SAXPEAVUObject@@V?$TSubclassOf@VAActor@@@@AEAV?$TArray@PEAVAActor@@VFDefaultAllocator@@@@@Z
-        UGameplayStatics_GetAllActorsOfClass = GetFunction((HMODULE)DLL, "GetAllActorsOfClass@");
-
-        // ?GetActorLocation@AActor@@QEBA?AVFVector@@XZ
-        AActor_GetActorLocation = GetFunction((HMODULE)DLL, "GetActorLocation@AActor");
-
-        // ?GetActorLabel@AActor@@QEBAAEBVFString@@XZ
-        AActor_GetActorLabel = GetFunction((HMODULE)DLL, "GetActorLabel@");
-
-        // ?ResizeViewport@FSceneViewport@@EEAAXIIW4Type@EWindowMode@@HH@Z
-        FSceneViewport_ResizeViewport = GetFunction((HMODULE)DLL, "ResizeViewport@");
-
-        if (0 == FSceneViewport_ResizeViewport)
-            return FALSE;
-
-        // Hook Function
-        if (FALSE == HookFunction(FSceneViewport_ResizeViewport, 
-            (void*)&Hook_FSceneViewport_ResizeViewport,
-            (void*)&FSceneViewport_ResizeViewport_original))
-            return FALSE;
-    }
-
-    // ----------------------UE4Editor-Core.dll----------------------
-    {
-        DWORD_PTR DLL = (DWORD_PTR)GetModuleHandle("UE4Editor-Core.dll");
-
-        if (0 == DLL)
-            return FALSE;
-
-        // ?GScreenshotBitmapIndex@@3HA
-        GScreenshotBitmapIndex = GetFunction((HMODULE)DLL, "GScreenshotBitmapIndex@");
-
-        if (0 == GScreenshotBitmapIndex)
-            return FALSE;
-
-        // ?EnsureFailed@FDebug@@SAXPEBD0HPEB_W@Z
-        if (FDebug_EnsureFailed = GetFunction((HMODULE)DLL, "EnsureFailed@FDebug"))
-        {
-            // EnsureFailed 를 막는 이유 : IsInGameThread 결과가 false이기 때문에 외부 프로그램이 Exec 커맨드를 쓰면 ADK에서 오류가 발생해 종료되기 때문입니다.
-            // The reason for blocking EnsureFailed: Since the result of IsInGameThread is false, if an external program executes an Exec command, 
-            // ADK will encounter an error and terminate.
-
-            if (ReadMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, cOriginalCode + 1))
-                // 어셈블리어 코드 nop (0xC3) 을 삽입해 EnsureFailed 로직이 실행되는 것을을 막습니다.
-                // Insert the assembly code NOP (0xC3) to prevent the EnsureFailed logic from executing.
-                WriteMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, 0xC3);
-        }
-
-        // ?AssertFailed@FDebug@@SAXPEBD0HPEB_WZZ
-        if (FDebug_AssertFailed = GetFunction((HMODULE)DLL, "AssertFailed@FDebug"))
-        {
-            // AssertFailed 를 막는 이유 : IsInGameThread 결과가 false이기 때문에 외부 프로그램이 Exec 커맨드를 쓰면 ADK에서 오류가 발생해 종료되기 때문입니다.
-            // The reason for blocking AssertFailed: Since the result of IsInGameThread is false, if an external program executes an Exec command, 
-            // ADK will encounter an error and terminate.
-
-            if (ReadMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, cOriginalCode + 2))
-                // 어셈블리어 코드 nop (0xC3) 을 삽입해 EnsureFailed 로직이 실행되는 것을을 막습니다.
-                // Insert the assembly code NOP (0xC3) to prevent the EnsureFailed logic from executing.
-                WriteMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, 0xC3);
-        }
-    }
-
-    // ----------------------UE4Editor-UnrealEd.dll----------------------
-    {
-        DWORD_PTR DLL = (DWORD_PTR)GetModuleHandle("UE4Editor-UnrealEd.dll");
-
-        if (0 == DLL)
-            return FALSE;
-
-        // ?Exec@UUnrealEdEngine@@UEAA_NPEAVUWorld@@PEB_WAEAVFOutputDevice@@@Z
-        UUnrealEdEngine_Exec = GetFunction((HMODULE)DLL, "Exec@UUnrealEdEngine");
-
-        if (0 == UUnrealEdEngine_Exec)
-            return FALSE;
-
-        // ?GCurrentLevelEditingViewportClient@@3PEAVFLevelEditorViewportClient@@EA
-        FLEVC_GCLEVC = 
-            GetFunction((HMODULE)DLL, "GCurrentLevelEditingViewportClient@");
-
-        if (0 == (FLEVC_GCLEVC = 
-            (void*)ReadMemPtr(hProcess, (ULONG_PTR)FLEVC_GCLEVC)))
-            return FALSE;
-
-        // ?GetViewLocation@FEditorViewportClient@@QEBAAEBVFVector@@XZ
-        FEditorViewportClient_GetViewLocation = GetFunction((HMODULE)DLL, "GetViewLocation@");
-
-        if (0 == FEditorViewportClient_GetViewLocation)
-            return FALSE;
-
-        // ?SetViewLocation@FEditorViewportClient@@QEAAXAEBVFVector@@@Z
-        FEditorViewportClient_SetViewLocation = GetFunction((HMODULE)DLL, "SetViewLocation@");
-
-        if (0 == FEditorViewportClient_SetViewLocation)
-            return FALSE;
-
-        // ?GetOrthoZoom@FEditorViewportClient@@QEBAMXZ
-        FEditorViewportClient_GetOrthoZoom = GetFunction((HMODULE)DLL, "GetOrthoZoom@");
-
-        if (0 == FEditorViewportClient_GetOrthoZoom)
-            return FALSE;
-
-        // ?SetOrthoZoom@FEditorViewportClient@@QEAAXM@Z
-        FEditorViewportClient_SetOrthoZoom = GetFunction((HMODULE)DLL, "SetOrthoZoom@");
-
-        if (0 == FEditorViewportClient_SetOrthoZoom)
-            return FALSE;
-
-        // ?Invalidate@FEditorViewportClient@@QEAAX_N0@Z
-        FEditorViewportClient_Invalidate = GetFunction((HMODULE)DLL, "Invalidate@");
-
-        if (0 == FEditorViewportClient_Invalidate)
-            return FALSE;
-
-        // ?Tick@UUnrealEdEngine@@UEAAXM_N@Z
-        UUnrealEdEngine_Tick = GetFunction((HMODULE)DLL, "Tick@UUnrealEdEngine");
-
-        if (0 == UUnrealEdEngine_Tick)
-            return FALSE;
-
-        // Hook Function
-        if (FALSE == HookFunction(UUnrealEdEngine_Tick, 
-            (void*)&Hook_UUnrealEdEngine_Tick,
-            (void*)&UUnrealEdEngine_Tick_original))
-            return FALSE;
-    }
-
-    return TRUE;
-}
-
-int
-UnloadDll(
-)
-{
-    if (NULL != hEvent)
-    {
-        SetEvent(hEvent);
-        CloseHandle(hEvent);
-    }
-
-    // 캡처 로직이 대기상태인지 확인 후 후킹 했던 함수를 원상복구 시킵니다.
-    // Check if the capture logic is in a waiting state, then restore the hooked function to its original state.
-    while (0 != RequestSign)
-        Sleep(100);
-
-    if (UUnrealEdEngine_Tick_original)
-        UnHookFunction(UUnrealEdEngine_Tick);
-
-    if (FSceneViewport_ResizeViewport_original)
-        UnHookFunction(FSceneViewport_ResizeViewport);
-
-    StopPipeComm();
-
-    if (FScreenshotRequest_CreateViewportScreenShotFilename)
-        WriteMemByte(hProcess, (ULONG_PTR)FScreenshotRequest_CreateViewportScreenShotFilename, *(cOriginalCode + 0));
-
-    if (FDebug_EnsureFailed)
-        WriteMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, *(cOriginalCode + 1));
-
-    if (FDebug_AssertFailed)
-        WriteMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, *(cOriginalCode + 2));
-
-    // 자기 자신을 언로드 합니다.
-    // Revert the injection and unload myself.
-    _beginthreadex(NULL, 0, UnloadThread,
-        (PVOID)hModule, 0, NULL);
-
-    return TRUE;
 }
 
 UINT WINAPI
@@ -524,19 +434,33 @@ ReuqestGetActors(
     {
         void* AActor;
 
-        if (0 == (AActor = (void*)ReadMemPtr(hProcess, 
-            (ULONG_PTR*)Array.AllocatorInstance + i)))
+        if (0 == (AActor = (void*)ReadMemPtr(hProcess,
+            (unsigned long long)((ULONG_PTR*)Array.AllocatorInstance + i))))
             continue;
 
         if (NULL == AActor)
             continue;
 
         FVector vec;
+        FVectorD vecd;
 
-        EXCEPTION_MACRO(
-            AActor_GetActorLocation(AActor, &vec); ,
-            goto ERROR_RESULT;
-        );
+        if (UEVersion == 4)
+            EXCEPTION_MACRO(
+                AActor_GetActorLocation(AActor, &vec); ,
+                goto ERROR_RESULT;
+            );
+
+        if (UEVersion == 5)
+        {
+            EXCEPTION_MACRO(
+                AActor_GetActorLocation(AActor, &vecd); ,
+                goto ERROR_RESULT;
+            );
+
+            vec.x = (float)vecd.x;
+            vec.y = (float)vecd.y;
+            vec.z = (float)vecd.z;
+        }
 
         void* FStr;
 
@@ -560,4 +484,173 @@ ERROR_RESULT:
 
     fclose(fp);
     return 1;
+}
+
+int
+InitFunctions(
+    int ver,
+    const char* prefix
+)
+{
+    char Buf[255];
+
+    // ----------------------ShooterGameEditor-Engine.dll----------------------
+    {
+        sprintf_s(Buf, sizeof(Buf), "%s-Engine.dll", prefix);
+        DWORD_PTR DLL = (DWORD_PTR)GetModuleHandle(Buf);
+
+        if (0 == DLL)
+            return FALSE;
+
+        // ?GEngine@@3PEAVUEngine@@EA
+        GEngine = GetFunction((HMODULE)DLL, "GEngine@");
+
+        if (0 == (GEngine = (void*)ReadMemPtr(hProcess, (ULONG_PTR)GEngine)))
+            return FALSE;
+
+        // ?GWorld@@3VUWorldProxy@@A
+        GWorld = GetFunction((HMODULE)DLL, "GWorld@");
+
+        if (0 == (GWorld = (void*)ReadMemPtr(hProcess, (ULONG_PTR)GWorld)))
+            return FALSE;
+
+        // ?CreateViewportScreenShotFilename@FScreenshotRequest@@SAXAEAVFString@@@Z
+        FScreenshotRequest_CreateViewportScreenShotFilename =
+            GetFunction((HMODULE)DLL, "CreateViewportScreenShotFilename@");
+
+        // ?StaticClass@AActor@@SAPEAVUClass@@XZ
+        AActor_StaticClass = GetFunction((HMODULE)DLL, "StaticClass@AActor");
+
+        // ?GetAllActorsOfClass@UGameplayStatics@@SAXPEAVUObject@@V?$TSubclassOf@VAActor@@@@AEAV?$TArray@PEAVAActor@@VFDefaultAllocator@@@@@Z
+        UGameplayStatics_GetAllActorsOfClass = GetFunction((HMODULE)DLL, "GetAllActorsOfClass@");
+
+        // ?GetActorLocation@AActor@@QEBA?AVFVector@@XZ
+        AActor_GetActorLocation = GetFunction((HMODULE)DLL, "GetActorLocation@AActor");
+
+        // ?GetActorLabel@AActor@@QEBAAEBVFString@@XZ
+        AActor_GetActorLabel = GetFunction((HMODULE)DLL, "GetActorLabel@");
+
+        // ?ResizeViewport@FSceneViewport@@EEAAXIIW4Type@EWindowMode@@HH@Z
+        FSceneViewport_ResizeViewport = GetFunction((HMODULE)DLL, "ResizeViewport@");
+
+        if (0 == FSceneViewport_ResizeViewport)
+            return FALSE;
+    }
+
+    // ----------------------ShooterGameEditor-Core.dll----------------------
+    {
+        sprintf_s(Buf, sizeof(Buf), "%s-Core.dll", prefix);
+        DWORD_PTR DLL = (DWORD_PTR)GetModuleHandle(Buf);
+
+        if (0 == DLL)
+            return FALSE;
+
+        // ?GScreenshotBitmapIndex@@3HA
+        GScreenshotBitmapIndex = GetFunction((HMODULE)DLL, "GScreenshotBitmapIndex@");
+
+        // ?EnsureFailed@FDebug@@SAXPEBD0HPEB_W@Z
+        FDebug_EnsureFailed = GetFunction((HMODULE)DLL, "EnsureFailed@FDebug");
+
+        // ?AssertFailed@FDebug@@SAXPEBD0HPEB_WZZ
+        FDebug_AssertFailed = GetFunction((HMODULE)DLL, "AssertFailed@FDebug");
+    }
+
+    // ----------------------ShooterGameEditor-UnrealEd.dll----------------------
+    {
+        sprintf_s(Buf, sizeof(Buf), "%s-UnrealEd.dll", prefix);
+        DWORD_PTR DLL = (DWORD_PTR)GetModuleHandle(Buf);
+
+        if (0 == DLL)
+            return FALSE;
+
+        // ?Exec@UUnrealEdEngine@@UEAA_NPEAVUWorld@@PEB_WAEAVFOutputDevice@@@Z
+        UUnrealEdEngine_Exec = GetFunction((HMODULE)DLL, "Exec@UUnrealEdEngine");
+
+        if (0 == UUnrealEdEngine_Exec)
+            return FALSE;
+
+        // ?GCurrentLevelEditingViewportClient@@3PEAVFLevelEditorViewportClient@@EA
+        FLEVC_GCLEVC =
+            GetFunction((HMODULE)DLL, "GCurrentLevelEditingViewportClient@");
+
+        if (0 == (FLEVC_GCLEVC =
+            (void*)ReadMemPtr(hProcess, (ULONG_PTR)FLEVC_GCLEVC)))
+            return FALSE;
+
+        // ?GetViewLocation@FEditorViewportClient@@QEBAAEBVFVector@@XZ
+        FEditorViewportClient_GetViewLocation = GetFunction((HMODULE)DLL, "GetViewLocation@");
+
+        if (0 == FEditorViewportClient_GetViewLocation)
+            return FALSE;
+
+        // ?SetViewLocation@FEditorViewportClient@@QEAAXAEBVFVector@@@Z
+        FEditorViewportClient_SetViewLocation = GetFunction((HMODULE)DLL, "SetViewLocation@");
+
+        if (0 == FEditorViewportClient_SetViewLocation)
+            return FALSE;
+
+        // ?GetOrthoZoom@FEditorViewportClient@@QEBAMXZ
+        FEditorViewportClient_GetOrthoZoom = GetFunction((HMODULE)DLL, "GetOrthoZoom@");
+
+        if (0 == FEditorViewportClient_GetOrthoZoom)
+            return FALSE;
+
+        // ?SetOrthoZoom@FEditorViewportClient@@QEAAXM@Z
+        FEditorViewportClient_SetOrthoZoom = GetFunction((HMODULE)DLL, "SetOrthoZoom@");
+
+        if (0 == FEditorViewportClient_SetOrthoZoom)
+            return FALSE;
+
+        // ?Invalidate@FEditorViewportClient@@QEAAX_N0@Z
+        FEditorViewportClient_Invalidate = GetFunction((HMODULE)DLL, "Invalidate@FEditorViewportClient");
+
+        if (0 == FEditorViewportClient_Invalidate)
+            return FALSE;
+
+        // ?Tick@UUnrealEdEngine@@UEAAXM_N@Z
+        UUnrealEdEngine_Tick = GetFunction((HMODULE)DLL, "Tick@UUnrealEdEngine");
+
+        if (0 == UUnrealEdEngine_Tick)
+            return FALSE;
+    }
+
+    // ?? 왜 0x38 을 더해야 하는지 모르겠습니다.
+    // I don't understand why 0x38 needs to be added.'
+
+    if (ver == 4)
+        GEngine = (char*)GEngine + 0x38;
+    else if (ver == 5)
+        GEngine = (char*)GEngine + 0x30;
+
+    // HOOK Function
+    if (FALSE == HookFunction(FSceneViewport_ResizeViewport,
+        (void*)&Hook_FSceneViewport_ResizeViewport,
+        (void*)&FSceneViewport_ResizeViewport_original))
+        return FALSE;
+
+    if (FALSE == HookFunction(UUnrealEdEngine_Tick,
+        (void*)&Hook_UUnrealEdEngine_Tick,
+        (void*)&UUnrealEdEngine_Tick_original))
+        return FALSE;
+
+    // 어셈블리어 코드 nop (0xC3) 을 삽입해 로직이 실행되는 것을을 막습니다.
+    // Insert the assembly code NOP (0xC3) to prevent the logic from executing.
+    if (ReadMemByte(hProcess, (ULONG_PTR)FScreenshotRequest_CreateViewportScreenShotFilename, cOriginalCode + 0))
+        // CreateViewportScreenShotFilename 를 막는 이유 : 이미지 출력 경로가 의도한 대로 하기 위해서입니다.
+        // The reason for blocking CreateViewportScreenShotFilename: To ensure that the image output path follows the intended direction.
+        WriteMemByte(hProcess, (ULONG_PTR)FScreenshotRequest_CreateViewportScreenShotFilename, 0xC3);
+
+    if (ReadMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, cOriginalCode + 1))
+        // EnsureFailed 를 막는 이유 : IsInGameThread 결과가 false이기 때문에 외부 프로그램이 Exec 커맨드를 쓰면 ADK에서 오류가 발생해 종료되기 때문입니다.
+        // The reason for blocking EnsureFailed: Since the result of IsInGameThread is false, if an external program executes an Exec command, 
+        // ADK will encounter an error and terminate.
+        WriteMemByte(hProcess, (ULONG_PTR)FDebug_EnsureFailed, 0xC3);
+
+    if (ReadMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, cOriginalCode + 2))
+        // AssertFailed 를 막는 이유 : IsInGameThread 결과가 false이기 때문에 외부 프로그램이 Exec 커맨드를 쓰면 ADK에서 오류가 발생해 종료되기 때문입니다.
+        // The reason for blocking AssertFailed: Since the result of IsInGameThread is false, if an external program executes an Exec command, 
+        // ADK will encounter an error and terminate.
+        WriteMemByte(hProcess, (ULONG_PTR)FDebug_AssertFailed, 0xC3);
+
+    return TRUE;
 }
