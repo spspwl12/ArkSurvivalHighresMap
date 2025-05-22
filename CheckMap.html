@@ -6,82 +6,201 @@ Visit our community web: https://maelstrom-gaming.com/
 <html>
 
 <head>
-  <title>tile map</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script>
-    const MAP_URL = document.location.href + "{z}/{x}/{y}.JPG";
-    const StartView = [-250, 250, 0]; // Y, X, Zoom
-    const GUIDE_LINE = false;
-    const GUIDE_LINE_STYLE = "color: #0000ff; font-size: 15px; font-weight: 200; background-color: white;";
-  </script>
-  <style>
-    body,
-    html {
-      background: white;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      font-size: 13px;
-      letter-spacing: .2em;
-      font-family: 'Exo 2', sans-serif;
-      letter-spacing: .05em;
-    }
+    <title>tile map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        const MAP_URL = document.location.origin + "/file?v=/{z}/{x}/{y}.WEBP";
+        const AACTORS_URL = document.location.origin + "/file?v=/AActors.txt"
+        const MapConfig = {
+            left: -577000.00,
+            right: 733720.00,
+            top: -475000.00,
+            bottom: 835720.00
+        };
+        const ArkLatLng = {
+            Origin_Lat: -529000.0,
+            Origin_Lng: -290800.0,
+            Scale_Lat: 9600.0,
+            Scale_Lng: 9584.00024
+        };
+        const GUIDE_LINE = false;
+        const GUIDE_LINE_STYLE = "color: #0000ff; font-size: 15px; font-weight: 200; background-color: white;";
+    </script>
+    <style>
+        body,
+        html {
+            background: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-size: 13px;
+            letter-spacing: .2em;
+            font-family: 'Exo 2', sans-serif;
+            letter-spacing: .05em;
+        }
 
-    #map {
-      z-index: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      margin: 0 auto;
-      background: transparent;
-    }
+        #map {
+            z-index: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0 auto;
+            background: transparent;
+        }
 
-    .leaflet-control-attribution,
-    .leaflet-popup-close-button {
-      display: none;
-    }
-  </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" type="text/css" />
+        #searchContainer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        #searchInput {
+            padding: 5px;
+            width: 200px;
+        }
+
+        .leaflet-control-attribution,
+        .leaflet-popup-close-button {
+            display: none;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" type="text/css" />
 </head>
 
 <body>
-  <div id="scroller">
-    <div id='map'></div>
+    <div id="searchContainer" style="display: none;">
+        <input type="text" id="searchInput" placeholder="Search Object Name">
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
-    <script>
-      var map = L.map('map', {
-        crs: L.CRS.Simple,
-        zoomControl: true,
-        minZoom: 0,
-        maxZoom: 7
-      });
+    <div id="scroller">
+        <div id='map'></div>
 
-      L.tileLayer(MAP_URL, {
-        attribution: '1'
-      }).addTo(map);
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+        <script>
+            var aactors = [];
+            let debounceTimer;
 
-      var GridInfo = L.GridLayer.extend({
-        createTile: function (coords) {
-          var tile = document.createElement('div');
-          tile.className = "infotile";
-          tile.style.outline = '1px solid black';
+            var map = L.map('map', {
+                crs: L.CRS.Simple,
+                zoomControl: true,
+                minZoom: 0,
+                maxZoom: 7
+            });
 
-          var tileBounds = this._tileCoordsToBounds(coords);
+            L.tileLayer(MAP_URL, {
+                attribution: '1'
+            }).addTo(map);
 
-          tile.innerHTML = `<span style="${GUIDE_LINE_STYLE}">X: ${coords.x} Y: ${coords.y} Z: ${coords.z}</span>`;
-          return tile;
-        }
-      });
+            var GridInfo = L.GridLayer.extend({
+                createTile: function (coords) {
+                    var tile = document.createElement('div');
+                    tile.className = "infotile";
+                    tile.style.outline = '1px solid black';
 
-      if (GUIDE_LINE)
-        map.addLayer(new GridInfo());
+                    var tileBounds = this._tileCoordsToBounds(coords);
 
-      map.setView([StartView[0], StartView[1]], StartView[2]);
-    </script>
-  </div>
-  </div>
+                    tile.innerHTML = `<span style="${GUIDE_LINE_STYLE}">X: ${coords.x} Y: ${coords.y} Z: ${coords.z}</span>`;
+                    return tile;
+                }
+            });
+
+            if (GUIDE_LINE)
+                map.addLayer(new GridInfo());
+
+            map.setView([-360.9687500000078, 369.56250000000927], 0);
+
+            async function processData(url) {
+                try {
+                    const response = await fetch(url);
+
+                    if (!response.ok)
+                        return;
+
+                    const text = await response.text();
+
+                    const lines = text.split("\r\n").filter(line => line.trim() !== "");
+
+                    const data = lines.map(line => line.split(","));
+                    aactors = data;
+
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    document.body.appendChild(input);
+
+                    document.getElementById("searchInput").addEventListener("input", () => {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(searchAndMark, 300);
+                    });
+
+                    document.getElementById('searchContainer').style.display = 'block';
+                } catch (error) {
+                    console.error("error: ", error);
+                }
+            }
+
+            processData(AACTORS_URL);
+
+            function ArkCoordToLatLng(x, y) {
+                if (!MapConfig)
+                    return [0, 0];
+
+                var x = (x - ArkLatLng.Origin_Lat) / ArkLatLng.Scale_Lat;
+                var y = (y - ArkLatLng.Origin_Lng) / ArkLatLng.Scale_Lng;
+
+                return [y, x];
+            }
+
+            function ArkCoordToLeaflet(latlng) {
+                if (!MapConfig)
+                    return [0, 0];
+
+                var x = Math.abs(MapConfig.left - (latlng[1] * ArkLatLng.Scale_Lat + ArkLatLng.Origin_Lat)) / 1706.666666666624;
+                var y = Math.abs(MapConfig.top - (latlng[0] * ArkLatLng.Scale_Lng + ArkLatLng.Origin_Lng)) / 1706.666666666624;
+
+                return [-y, x];
+            }
+
+            function searchAndMark() {
+                const keyword = document.getElementById("searchInput").value.trim();
+
+                map.eachLayer(layer => {
+                    if (layer instanceof L.Marker) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                var i = 0;
+
+                aactors.forEach((e) => {
+                    if (keyword.length > 0 && e[0].toLowerCase().includes(keyword.toLowerCase())) {
+                        if (++i > 100)
+                            return false;
+
+                        const latlng = ArkCoordToLatLng(e[1], e[2]);
+                        const svgIcon = L.divIcon({
+                            html: `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
+                                <circle cx="5" cy="5" r="4" fill="red" stroke="black" stroke-width="2"/>
+                            </svg>`,
+                            className: "",
+                            iconSize: [10, 10],
+                            iconAnchor: [5, 5]
+                        });
+
+                        L.marker(ArkCoordToLeaflet(latlng), { icon: svgIcon }).addTo(map)
+                            .bindPopup(`${e[0]}<br><br>lat: ${latlng[0]}<br>lon: ${latlng[1]}<br>z: ${e[2]}`).openPopup();
+                    }
+                });
+            }
+        </script>
+    </div>
+    </div>
 
 </body>
 
