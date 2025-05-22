@@ -6,7 +6,7 @@
 그런 불편을 해소하기 위해 프로그램을 만들게 되었습니다.<br>
 아크 서바이벌 이볼브드 (ARK: Survival Evolved) 게임을 예로 들어 타일맵으로 만들었으나 아크뿐만 아니라 언리얼 엔진 기반인 게임들도 타일맵을 만들 수 있습니다.<br>
 이후 캡처된 이미지는 [Leaflet](https://github.com/Leaflet/Leaflet)를 이용하여 지도처럼 볼 수 있습니다.<br>
-**※ ARK DevKit 이 설치되어있어야 합니다.**
+**※ 언리얼엔진 에디터가 설치되어있어야 합니다.**
 
 이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.
 - minhook ( https://github.com/TsudaKageyu/minhook ) => 정적 라이브러리, 언리얼 엔진 함수를 후킹할 떄 쓰입니다.<br>
