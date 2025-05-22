@@ -15,6 +15,7 @@
 ### <a href="http://138.2.51.230:17875/TheIsland/" target="_blank">TheIsland</a>
 ### <a href="http://138.2.51.230:17875/Ragnarok/" target="_blank">Ragnarok</a>
 ### <a href="http://138.2.51.230:17875/ScorchedEarth/" target="_blank">ScorchedEarth</a>
+### <a href="http://138.2.51.230:17875/TheCenter/" target="_blank">TheCenter</a>
 ### <a href="http://138.2.51.230:17875/Fjordur/" target="_blank">Fjordur</a>
 <a href="http://138.2.51.230:17875/Fjordur_Asgard/" target="_blank">Fjordur_Asgard</a><br>
 <a href="http://138.2.51.230:17875/Fjordur_Vanaheim/" target="_blank">Fjordur_Vanaheim</a><br>
@@ -78,5 +79,9 @@
    ![Animation8](https://github.com/user-attachments/assets/d7962cb6-20e7-4718-9dde-9c89a30cedad)
 8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.
    ![Animation9](https://github.com/user-attachments/assets/cec65d45-56b1-4248-bc51-bc43945381f6)
-
-
+9. ArkEditorCapture.exe를 실행합니다
+10. ArkEditorCapture.exe의 Open 버튼을 누릅니다.
+11. ArkEditorCapture.exe의 ZeroXY와 ZOriginal 버튼을 눌러 맵이 뷰포트에 들어오는지 확인합니다.
+    ![Animation10](https://github.com/user-attachments/assets/4ef76d1e-bffb-4803-8779-a4fe1ccf8f07)
+12. 맵이 한번에 안보인다면, 스크롤을 조정하여 한번에 보이게끔 설정합니다
+    ![Animation11](https://github.com/user-attachments/assets/ca1c1238-11ed-40bc-beba-1f719ac16815)
