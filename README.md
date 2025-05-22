@@ -1,9 +1,12 @@
 # ArkSurvivalHighresMap
 
 ## 프로젝트 소개
-아크 서바이벌 이볼브드 (ARK: Survival Evolved) 게임의 맵 지형을 고해상도로 캡처해 주는 프로그램입니다.<br>
-이후 캡처된 이미지는 Leaflet를 이용하여 지도처럼 볼 수 있습니다.<br>
-**※ ARK DevKit 이 설치되어있어야 합니다.**
+언리얼 엔진 에디터 프로그램은 고해상도 사진을 HighResShot 명령어를 이용해서 사진을 찍을 수 있으나, 
+너무 큰 사진을 요구할 때 Fatal Error가 뜨는 문제점이 있습니다.<br>
+그런 불편을 해소하기 위해 프로그램을 만들게 되었습니다.<br>
+아크 서바이벌 이볼브드 (ARK: Survival Evolved) 게임을 예로 들어 타일맵으로 만들었으나 아크뿐만 아니라 언리얼 엔진 기반인 게임들도 타일맵을 만들 수 있습니다.<br>
+이후 캡처된 이미지는 [Leaflet](https://github.com/Leaflet/Leaflet)를 이용하여 지도처럼 볼 수 있습니다.<br>
+**※ 언리얼엔진 에디터가 설치되어있어야 합니다.**
 
 이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.
 - minhook ( https://github.com/TsudaKageyu/minhook ) => 정적 라이브러리, 언리얼 엔진 함수를 후킹할 떄 쓰입니다.<br>
@@ -11,13 +14,14 @@
 - libjpeg ( https://github.com/libjpeg-turbo/libjpeg-turbo ) => 정적 라이브러리, bmp 파일을 jpg 확장자로 인코딩할 때 쓰입니다.<br>
 
 ## 미리보기
-### <a href="http://138.2.51.230:17875/Extinction/" target="_blank">Extinction</a>
-### <a href="http://138.2.51.230:17875/TheIsland/" target="_blank">TheIsland</a>
-### <a href="http://138.2.51.230:17875/Ragnarok/" target="_blank">Ragnarok</a>
-### <a href="http://138.2.51.230:17875/ScorchedEarth/" target="_blank">ScorchedEarth</a>
-### <a href="http://138.2.51.230:17875/Fjordur/" target="_blank">Fjordur</a>
-<a href="http://138.2.51.230:17875/Fjordur_Asgard/" target="_blank">Fjordur_Asgard</a><br>
-<a href="http://138.2.51.230:17875/Fjordur_Vanaheim/" target="_blank">Fjordur_Vanaheim</a><br>
+### [Extinction](http://138.2.51.230:17875/Extinction/)
+### [TheIsland](http://138.2.51.230:17875/TheIsland/)
+### [Ragnarok](http://138.2.51.230:17875/Ragnarok/)
+### [ScorchedEarth](http://138.2.51.230:17875/ScorchedEarth/)
+### [TheCenter](http://138.2.51.230:17875/TheCenter/)
+### [Fjordur](http://138.2.51.230:17875/Fjordur/)
+[Fjordur_Asgard](http://138.2.51.230:17875/Fjordur_Asgard/)<br>
+[Fjordur_Vanaheim](http://138.2.51.230:17875/Fjordur_Vanaheim/)
 
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
@@ -48,6 +52,7 @@
 12. 타일맵이 저장될 폴더를 선택합니다.
 13. 적당한 타일 사이즈를 선택합니다. ( 크기가 커질수록 고사양 요구 )
 14. StartCapture 버튼을 클릭합니다. ( 뷰포트 렌더링 사이즈가 256 x 256 아닐경우 자동으로 조정합니다. )
+    
 ## 작동 화면
 ![Animation4](https://github.com/user-attachments/assets/d3f26cb1-082b-49bd-a1eb-9329839bd25b)
 
@@ -67,8 +72,19 @@
    ![Animation2](https://github.com/user-attachments/assets/aa63dc5e-3f8a-431d-b407-ab0816eb8f07)
 3. 우측 하단에 **셰이더 컴파일중**이 있으면 기다려야 합니다. ( 매우 오랜 시간 소요 )<br>
    ![Animation3](https://github.com/user-attachments/assets/82002671-a480-4584-b3b7-ad4f1bceb24c)
-4. 
-
-
-
-
+4. Alt+4 또는 라이팅 포함을 누릅니다
+   ![Animation5](https://github.com/user-attachments/assets/b05246ac-afc8-40a8-8f71-451370fcb882)
+5. Alt+G 또는 원근을 누르고 G 또는 게임 뷰를 눌러 네모난 선이 안 보이도록 합니다. 그리고 Alt+J 또는 상단을 누릅니다. 
+   ![Animation6](https://github.com/user-attachments/assets/ec763ba5-0bcd-4e56-9ac7-06d6ae0eea05)
+6. 맵이 너무 밝으면 **DirectionalLight**를 검색해 Intensity 값을 조절합니다. ( ※ DirectionalLight가 여러개인경우, 옆에 눈 아이콘을 클릭해 어두워 지는지 확인 후 Intensity 값을 조절합니다. )
+   ![Animation7](https://github.com/user-attachments/assets/cecc2af1-2a48-4d83-a412-1fa65c58040a)
+7. 씬 아웃라이너에서 아무거나 선택한 다음 오른쪽 클릭 후 모두 선택을 누릅니다.
+   ![Animation8](https://github.com/user-attachments/assets/d7962cb6-20e7-4718-9dde-9c89a30cedad)
+8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.
+   ![Animation9](https://github.com/user-attachments/assets/cec65d45-56b1-4248-bc51-bc43945381f6)
+9. ArkEditorCapture.exe를 실행합니다
+10. ArkEditorCapture.exe의 Open 버튼을 누릅니다.
+11. ArkEditorCapture.exe의 ZeroXY와 ZOriginal 버튼을 눌러 맵이 뷰포트에 들어오는지 확인합니다.
+    ![Animation10](https://github.com/user-attachments/assets/4ef76d1e-bffb-4803-8779-a4fe1ccf8f07)
+12. 맵이 한번에 안보인다면, 스크롤을 조정하여 한번에 보이게끔 설정합니다
+    ![Animation11](https://github.com/user-attachments/assets/ca1c1238-11ed-40bc-beba-1f719ac16815)
