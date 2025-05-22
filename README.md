@@ -1,8 +1,11 @@
 # ArkSurvivalHighresMap
 
 ## 프로젝트 소개
-아크 서바이벌 이볼브드 (ARK: Survival Evolved) 게임의 맵 지형을 고해상도로 캡처해 주는 프로그램입니다.<br>
-이후 캡처된 이미지는 Leaflet를 이용하여 지도처럼 볼 수 있습니다.<br>
+언리얼 엔진 에디터 프로그램은 고해상도 사진을 HighResShot 명령어를 이용해서 사진을 찍을 수 있으나, 
+너무 큰 사진을 요구할 때 Fatal Error가 뜨는 문제점이 있습니다.<br>
+그런 불편을 해소하기 위해 프로그램을 만들게 되었습니다.<br>
+아크 서바이벌 이볼브드 (ARK: Survival Evolved) 게임을 예로 들어 타일맵으로 만들었으나 아크뿐만 아니라 언리얼 엔진 기반인 게임들도 타일맵을 만들 수 있습니다.<br>
+이후 캡처된 이미지는 [Leaflet](https://github.com/Leaflet/Leaflet)를 이용하여 지도처럼 볼 수 있습니다.<br>
 **※ ARK DevKit 이 설치되어있어야 합니다.**
 
 이 프로그램에 사용된 Third-Party Program 은 다음과 같습니다.
@@ -11,14 +14,14 @@
 - libjpeg ( https://github.com/libjpeg-turbo/libjpeg-turbo ) => 정적 라이브러리, bmp 파일을 jpg 확장자로 인코딩할 때 쓰입니다.<br>
 
 ## 미리보기
-### <a href="http://138.2.51.230:17875/Extinction/" target="_blank">Extinction</a>
-### <a href="http://138.2.51.230:17875/TheIsland/" target="_blank">TheIsland</a>
-### <a href="http://138.2.51.230:17875/Ragnarok/" target="_blank">Ragnarok</a>
-### <a href="http://138.2.51.230:17875/ScorchedEarth/" target="_blank">ScorchedEarth</a>
-### <a href="http://138.2.51.230:17875/TheCenter/" target="_blank">TheCenter</a>
-### <a href="http://138.2.51.230:17875/Fjordur/" target="_blank">Fjordur</a>
-<a href="http://138.2.51.230:17875/Fjordur_Asgard/" target="_blank">Fjordur_Asgard</a><br>
-<a href="http://138.2.51.230:17875/Fjordur_Vanaheim/" target="_blank">Fjordur_Vanaheim</a><br>
+### [Extinction](http://138.2.51.230:17875/Extinction/)
+### [TheIsland](http://138.2.51.230:17875/TheIsland/)
+### [Ragnarok](http://138.2.51.230:17875/Ragnarok/)
+### [ScorchedEarth](http://138.2.51.230:17875/ScorchedEarth/)
+### [TheCenter](http://138.2.51.230:17875/TheCenter/)
+### [Fjordur](http://138.2.51.230:17875/Fjordur/)
+[Fjordur_Asgard](http://138.2.51.230:17875/Fjordur_Asgard/)<br>
+[Fjordur_Vanaheim](http://138.2.51.230:17875/Fjordur_Vanaheim/)
 
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
