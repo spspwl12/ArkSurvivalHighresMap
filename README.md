@@ -114,7 +114,7 @@
 - 모든 리소스 선택 후 (Ctrl+A) 다음 디테일 탭에서 Force Infinite Draw Distance 검색 후 체크해야 일부 오브젝트 보임
 
 ### 맵 그림자가 체크무늬처럼 보기 싫을 때 해결 방법
-- 씬 아웃라이너에 Landscape 검색 -> Lighting -> Allow Height Field Shadow 검색 후 체크 해제
+- 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 Allow Height Field Shadow 검색 후 체크 해제
 
 ### 물 색깔이 마음에 안 들 때
 - 물 오브젝트 클릭 -> Top Material 변경( 미리보기를 더블클릭해 색깔 사용자 지정할 수도 있음 )
