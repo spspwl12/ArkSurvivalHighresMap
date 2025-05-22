@@ -88,3 +88,36 @@
     ![Animation10](https://github.com/user-attachments/assets/4ef76d1e-bffb-4803-8779-a4fe1ccf8f07)
 12. 맵이 한번에 안보인다면, 스크롤을 조정하여 한번에 보이게끔 설정합니다
     ![Animation11](https://github.com/user-attachments/assets/ca1c1238-11ed-40bc-beba-1f719ac16815)
+
+## 타일맵 제작 팁 ( 아크 서바이벌 이볼브드 기준 )
+### 에픽게임즈 런처 없이 언리얼 실행 방법
+윈도우키 + R 을 입력해 실행창이 뜨면 아래 문장을 입력후 엔터
+- UE4 : %ProgramFiles%\Epic Games\ARKEditor\Engine\Binaries\Win64\UE4Editor.exe" ShooterGame/ShooterGame.uproject
+- UE5 : %ProgramFiles%\Epic Games\ARKDevkit\Engine\Binaries\Win64\ShooterGameEditor.exe"  ShooterGame/ShooterGame.uproject
+
+### 오브젝트에 사각형 선이 보일 시
+- Alt+G(원근) -> G(게임뷰) 체크 해제 -> Alt+J(상단) 
+
+### 익스팅션 한정 레벨 해제옵션 ( 좌측 상단에 있는 레벨 창 )
+- Ext_DesertVista
+- Ext_Proxymeshes
+- Ext_LakesAndRivers
+
+### 맵 밝기가 너무 밝은 경우
+- DirectionalLight 검색 후 Intensity 값 조절
+- SkyLight 검색 후 끄기
+
+### 아일랜드 맵 화산 옆 반짝거리는 오브젝트 숨기기
+- 씬 아웃라이너에 BP_VolcanicLightning 검색 후 숨기기 ( 단축키 H )
+
+### 탐험 노트( Explorer Note ) 또는 일부 오브젝트가 안 보일시
+- 모든 리소스 선택 후 (Ctrl+A) 다음 디테일 탭에서 Force Infinite Draw Distance 검색 후 체크해야 일부 오브젝트 보임
+
+### 맵 그림자가 체크무늬처럼 보기 싫을 때 해결 방법
+- 씬 아웃라이너에 Landscape 검색 -> Lighting -> Allow Height Field Shadow 검색 후 체크 해제
+
+### 물 색깔이 마음에 안 들 때
+- 물 오브젝트 클릭 -> Top Material 변경( 미리보기를 더블클릭해 색깔 사용자 지정할 수도 있음 )
+
+### 해당 프로그램으로 만들어진 타일맵 사진에 찍힌 실제 오브젝트 위치를 Leaflet 마커를 이용해 표시하는 법
+- [Extinction](http://138.2.51.230:17875/Extinction/) 접속 후 오른쪽 마우스 클릭해서 소스코드 보기 후 참고
