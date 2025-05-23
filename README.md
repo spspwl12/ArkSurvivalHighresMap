@@ -114,6 +114,9 @@
 ### 맵 그림자가 체크무늬처럼 보기 싫을 때 해결 방법
 - 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 Allow Height Field Shadow 검색 후 체크 해제
 
+### 맵에서 확대 축소 시 보였다 안보였다 하는현상 해결 방법
+- 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 LOD -> LODFalloff 를 Square Root 로 변경
+  
 ### 맵에 구름 그림자가 전역에 표시될떄 해결 방법
 - 뷰포트에 표시 -> True Sky 문구 들어간 옵션 체크 해제
 
