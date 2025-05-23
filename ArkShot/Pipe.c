@@ -1,6 +1,8 @@
-#include "Pipe.h"
+#define WIN32_LEAN_AND_MEAN 
 #include <Windows.h>
 #include <process.h>
+
+#include "Pipe.h"
 
 static HANDLE hPipe;
 static BOOL bStart;

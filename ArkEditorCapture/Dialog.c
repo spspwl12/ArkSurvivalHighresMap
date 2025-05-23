@@ -1,15 +1,17 @@
-#include "Dialog.h"
+#define WIN32_LEAN_AND_MEAN 
+#include <Windows.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include "Dialog.h"
 
 float 
 GetDlgItemFloat(
-    HWND hDlg, 
+    void* hDlg, 
     int nIDDlgItem
 ) 
 {
-
     char buf[50];
-    GetDlgItemText(hDlg, nIDDlgItem, buf, sizeof(buf));
+    GetDlgItemText((HWND)hDlg, nIDDlgItem, buf, sizeof(buf));
 
     buf[49] = 0;
 
@@ -18,32 +20,27 @@ GetDlgItemFloat(
 
 void 
 SetDlgItemFloat(
-    HWND hDlg, 
+    void* hDlg, 
     int nIDDlgItem,
     float value
 ) 
 {
-
     char buf[50];
 
     sprintf_s(buf, sizeof(buf), "%.2f", value);
     buf[49] = 0;
 
-    SetDlgItemText(hDlg, nIDDlgItem, buf);
+    SetDlgItemText((HWND)hDlg, nIDDlgItem, buf);
 }
 
 void
-CopyTextDlgItem(
-    HWND hDlg,
-    int nSrcDlgItem,
-    int nDstDlgItem
+EnableAllControls(
+    void* hDlg,
+    int startID,
+    int endID,
+    int bEnable
 )
 {
-
-    char buf[255] = { 0 };
-
-    GetDlgItemText(hDlg, nSrcDlgItem, buf, sizeof(buf));
-    if (0 >= strlen(buf))
-        return;
-    SetDlgItemText(hDlg, nDstDlgItem, buf);
+    for (int i = startID; i < endID; ++i)
+        EnableWindow(GetDlgItem((HWND)hDlg, i), bEnable);
 }

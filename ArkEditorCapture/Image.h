@@ -9,28 +9,35 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    int
-    InitImage(
-    );
+int
+InitImage(
+);
 
-    void
-    CloseImage(
-    );
+void
+CloseImage(
+);
 
-    int
-    SaveImageParts(
-        int type,
-        int quality,
-        int cutSizeX,
-        int cutSizeY,
-        int startX,
-        int startY,
-        int maxX,
-        int maxY,
-        const char* extension,
-        const char* srcPath,
-        const char* dstPath
-    );
+int
+SaveImageParts(
+    int type,
+    int quality,
+    int cutSize,
+    int startX,
+    int startY,
+    int maxX,
+    int maxY,
+    const char* extension,
+    const char* srcPath,
+    const char* dstPath
+);
+
+int
+DrawImagehDC(
+    void* hdc,
+    const char* path,
+    int x,
+    int y
+);
 #ifdef __cplusplus
 }
 #endif

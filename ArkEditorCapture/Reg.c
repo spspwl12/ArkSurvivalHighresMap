@@ -1,9 +1,17 @@
-﻿#include <Windows.h>
+﻿#define WIN32_LEAN_AND_MEAN 
+#include <Windows.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "reg.h"
+#include <stdlib.h>
+#include "Reg.h"
 
-int ReadReg(const char* path, const char* key, const char* defaultVal, char* buf)
+int
+ReadReg(
+	const char* path,
+	const char* key,
+	const char* defaultVal, 
+	char* buf
+)
 {
 	HKEY    hKey;
 	unsigned long   data_size = 255;
@@ -27,7 +35,12 @@ int ReadReg(const char* path, const char* key, const char* defaultVal, char* buf
 	return 0;
 }
 
-int WriteReg(const char* path, const char* key, char* value)
+int 
+WriteReg(
+	const char* path, 
+	const char* key, 
+	char* value
+)
 {
 	HKEY    hKey;
 	unsigned long	dwDesc;
@@ -41,4 +54,31 @@ int WriteReg(const char* path, const char* key, char* value)
 
 	RegCloseKey(hKey);
 	return 1;
+}
+
+int
+LoadVal(
+	const char* name,
+	const char* initVal
+)
+{
+	char Buf[255] = { 0 };
+
+	ReadReg(REG_PATH, name, initVal, Buf);
+	Buf[10] = 0;
+
+	return atoi(Buf);
+}
+
+int
+SaveVal(
+	const char* name,
+	int val
+)
+{
+	char Buf[255] = { 0 };
+
+	_itoa_s(val, Buf, sizeof(Buf), 10);
+
+	return WriteReg(REG_PATH, name, Buf);
 }

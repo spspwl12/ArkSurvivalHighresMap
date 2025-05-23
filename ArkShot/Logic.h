@@ -9,13 +9,6 @@ returnType __fastcall Hook_ ## name(__VA_ARGS__)
 
 #define EXCEPTION_MACRO(src, ex)  __try{src}__except (EXCEPTION_EXECUTE_HANDLER){ex}
 
-typedef struct TArray
-{
-	void* AllocatorInstance;
-	signed int  ArrayNum;
-	signed int  ArrayMax;
-}TArray;
-
 int
 LoadDll(
 	void* hModule

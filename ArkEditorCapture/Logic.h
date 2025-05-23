@@ -1,8 +1,13 @@
 #pragma once
 
-#define ATOMIC_FN       1.3333333333333E-04f
-#define CORRECTION      0.0000001f
-#define SAVETILESIZE    256
+#define ATOMIC_FN               1.3333333333333E-04F
+#define SAVETILESIZE            256
+
+// MODE
+#define LOGIC_MODE_CAPTURE      1
+#define LOGIC_MODE_PREVIEW      2
+
+#define PREVIEW_PREFIX          "\\.__preview"
 
 typedef struct StartCaptureParameter {
     void* hProcess;
@@ -10,12 +15,13 @@ typedef struct StartCaptureParameter {
     void* hDlg;
     int Status;
     int quality;
+    int currentMode;
     int UEVersion;
 }CParam;
 
 int
-OpenProcessProc(
-    HWND hDlg
+OpenArkEditor(
+    void* _hDlg
 );
 
 int
@@ -30,12 +36,22 @@ CloseArkEditor(
 );
 
 void
-LoadValue(
+QueryEngineVariable(
 );
 
 int 
 StartCapture(
-    int quality
+    int quality,
+    int mode,
+    void* endcb
+);
+
+void
+DisableControls(
+);
+
+void
+EnableControls(
 );
 
 void
@@ -47,9 +63,12 @@ SetButtonAction(
     int mode
 );
 
-int
-GetImageQuality(
-    HINSTANCE hInst,
-    HWND hDlg,
-    int val
+void
+FetchRegistryValue(
+    void* hDlg
+);
+
+void
+StoreRegistryValue(
+    void* hDlg
 );

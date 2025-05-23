@@ -39,10 +39,16 @@
     <ClInclude Include="Reg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MainLogic.h">
+    <ClInclude Include="SaveText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SaveText.h">
+    <ClInclude Include="DialogQuality.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DialogPreview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,13 +77,16 @@
     <ClCompile Include="Reg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MainLogic.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SaveText.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QualityDialog.c">
+    <ClCompile Include="DialogQuality.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogPreview.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

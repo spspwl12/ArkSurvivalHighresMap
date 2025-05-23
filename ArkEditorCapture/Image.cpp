@@ -1,11 +1,14 @@
-#include "Image.h"
-#include "../libwebp/webp/encode.h"
-#include <windows.h>
+#define WIN32_LEAN_AND_MEAN 
+#include <Windows.h>
+#include <ole2.h> 
 #include <gdiplus.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <process.h>
 #include <string>
+
+#include "Image.h"
+#include "../libwebp/webp/encode.h"
 
 #pragma comment(lib, "gdiplus.lib")
 
@@ -201,8 +204,7 @@ int
 SaveImageParts(
     int type,
     int quality,
-    int cutSizeX,
-    int cutSizeY,
+    int cutSize,
     int startX,
     int startY,
     int maxX,
@@ -236,8 +238,8 @@ SaveImageParts(
     width = image->GetWidth();
     height = image->GetHeight();
 
-    cntX = width / cutSizeX;
-    cntY = height / cutSizeY;
+    cntX = width / cutSize;
+    cntY = height / cutSize;
 
     count = cntX * cntY;
     coreCount = 0;
@@ -269,7 +271,7 @@ SaveImageParts(
 
                 if (GetFileAttributes(zxy_string) == ((DWORD)-1))
                 {
-                    thData[j].setData(type, quality, cutSizeX, cutSizeY, x, y, zxy_string);
+                    thData[j].setData(type, quality, cutSize, cutSize, x, y, zxy_string);
 
                     if (false == ProcessSaveImageParts(image, thData, j, count == 1))
                         goto ERROR_RESULT;
@@ -606,4 +608,50 @@ _converterThread(
         data->quality);
 
     return FALSE;
+}
+
+int
+DrawImagehDC(
+    void* hdc,
+    const char* path,
+    int x,
+    int y
+)
+{
+    Graphics graphics((HDC)hdc);
+    Status status = graphics.GetLastStatus();
+
+    if (Ok != status)
+        return FALSE;
+
+    wchar_t* wszPath;
+
+    if (nullptr == (wszPath = new wchar_t[MAX_PATH]))
+        return FALSE;
+
+    if (0 == MultiByteToWideChar(CP_UTF8, 0, path, -1, wszPath, MAX_PATH))
+    {
+        delete[] wszPath;
+        return FALSE;
+    }
+
+    Image* img = new Image(wszPath);
+
+    if (nullptr == img)
+    {
+        delete[] wszPath;
+        return FALSE;
+    }
+
+    if (Ok != graphics.DrawImage(img, x, y))
+    {
+        delete img;
+        delete[] wszPath;
+        return FALSE;
+    }
+
+    delete img;
+    delete[] wszPath;
+
+    return TRUE;
 }

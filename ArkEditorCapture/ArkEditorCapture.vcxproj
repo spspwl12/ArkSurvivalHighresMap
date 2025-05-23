@@ -147,15 +147,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Dialog.h" />
+    <ClInclude Include="DialogPreview.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Logic.h" />
     <ClInclude Include="InjectDll.h" />
-    <ClInclude Include="MainLogic.h" />
     <ClInclude Include="Pipe.h" />
     <ClInclude Include="Process.h" />
+    <ClInclude Include="DialogQuality.h" />
     <ClInclude Include="Reg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SaveText.h" />
+    <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.c" />
@@ -163,12 +165,13 @@
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Logic.c" />
     <ClCompile Include="InjectDll.c" />
-    <ClCompile Include="MainLogic.c" />
     <ClCompile Include="Pipe.c" />
+    <ClCompile Include="DialogPreview.c" />
     <ClCompile Include="Process.c" />
-    <ClCompile Include="QualityDialog.c" />
+    <ClCompile Include="DialogQuality.c" />
     <ClCompile Include="Reg.c" />
     <ClCompile Include="SaveText.c" />
+    <ClCompile Include="Utility.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ArkEditorCapture.rc" />

@@ -1,3 +1,4 @@
+#define WIN32_LEAN_AND_MEAN 
 #include <Windows.h>
 #include <process.h>
 #include <wchar.h>
@@ -159,10 +160,9 @@ Commnuication(
             int readSize = 0;
 
             if (UEVersion == 4)
-                readSize = sizeof(FVector);
-
-            if (UEVersion == 5)
-                readSize = sizeof(FVectorD);
+                readSize = sizeof(Vec3D);
+            else if (UEVersion == 5)
+                readSize = sizeof(Vec3DD);
             
             if (0 == readSize)
                 goto ERROR_RESULT;
@@ -214,10 +214,9 @@ Commnuication(
             int readSize = 0;
 
             if (UEVersion == 4)
-                readSize = sizeof(FVector);
-
-            if (UEVersion == 5)
-                readSize = sizeof(FVectorD);
+                readSize = sizeof(Vec3D);
+            else if (UEVersion == 5)
+                readSize = sizeof(Vec3DD);
 
             if (readSize != size - 1)
                 goto ERROR_RESULT;
@@ -260,32 +259,37 @@ Commnuication(
         case MODE_SET_XYZZ_CAPTURE:
         {
             int readSize = 0;
+            Vec5D vec;
+            Vec5DD vecd;
 
             if (UEVersion == 4)
-                readSize = sizeof(FVector);
-
-            if (UEVersion == 5)
-                readSize = sizeof(FVectorD);
-
-            float fval;
-
-            memcpy(&fval, ptr + readSize, sizeof(float));
-
-            // Zoom
-            readSize += 4;
-
-            memcpy(&CaptureRes, ptr + readSize, 4);
-
-            // CaptureSize
-            readSize += 4;
+                memcpy(&vec, ptr, readSize = sizeof(Vec5D));
+            else if (UEVersion == 5)
+                memcpy(&vecd, ptr, readSize = sizeof(Vec5DD));
 
             if (readSize != size - 1)
                 goto ERROR_RESULT;
 
             FEditorViewportClient_SetViewLocation(FLEVC_GCLEVC, ptr);
-            FEditorViewportClient_SetOrthoZoom(FLEVC_GCLEVC, fval);
+
+            if (UEVersion == 4)
+            {
+                FEditorViewportClient_SetOrthoZoom(FLEVC_GCLEVC, vec.zoom);
+                CaptureRes = vec.resval;
+            }
+            else if (UEVersion == 5)
+            {
+                FEditorViewportClient_SetOrthoZoom(FLEVC_GCLEVC, vecd.zoom);
+                CaptureRes = vecd.resval;
+            }
 
             FEditorViewportClient_Invalidate(FLEVC_GCLEVC, 0, 0);
+
+            if (0 == CaptureRes)
+            {
+                SendPipeMessage(1, buf);
+                return;
+            }
 
             if (0 != RequestSign)
                 return;
@@ -441,17 +445,19 @@ ReuqestGetActors(
         if (NULL == AActor)
             continue;
 
-        FVector vec;
-        FVectorD vecd;
+        Vec3D vec;
 
         if (UEVersion == 4)
+        {
             EXCEPTION_MACRO(
-                AActor_GetActorLocation(AActor, &vec); ,
+                AActor_GetActorLocation(AActor, &vec);,
                 goto ERROR_RESULT;
             );
-
-        if (UEVersion == 5)
+        }
+        else if (UEVersion == 5)
         {
+            Vec3DD vecd;
+
             EXCEPTION_MACRO(
                 AActor_GetActorLocation(AActor, &vecd); ,
                 goto ERROR_RESULT;

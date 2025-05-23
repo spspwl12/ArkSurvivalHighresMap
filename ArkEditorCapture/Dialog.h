@@ -1,23 +1,22 @@
 #pragma once
 
-#include <windows.h>
-
 float 
 GetDlgItemFloat(
-    HWND hDlg,
+    void* hDlg,
     int nIDDlgItem
 );
 
 void 
 SetDlgItemFloat(
-    HWND hDlg,
+    void* hDlg,
     int nIDDlgItem,
     float value
 );
 
 void
-CopyTextDlgItem(
-    HWND hDlg,
-    int nSrcDlgItem,
-    int nDstDlgItem
+EnableAllControls(
+    void* hDlg,
+    int startID,
+    int endID,
+    int bEnable
 );

@@ -1,10 +1,10 @@
 #define WIN32_LEAN_AND_MEAN 
-#include <windows.h>
+#include <Windows.h>
 #include <commctrl.h>
 #include "resource.h"
 
 INT_PTR CALLBACK
-QualityDialogProc(
+DialogQualityProc(
     HWND hDlg,
     UINT message,
     WPARAM wParam,
@@ -88,4 +88,27 @@ QualityDialogProc(
     }
 
     return (INT_PTR)FALSE;
+}
+
+int
+GetImageQuality(
+    HINSTANCE hInst,
+    HWND hDlg,
+    int val
+)
+{
+    const int index = (int)SendDlgItemMessage(hDlg,
+        IDC_COMBO_EXTIMG, CB_GETCURSEL, 0, 0);
+
+    char Buf[255] = { 0 };
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETLBTEXT, index, (LPARAM)Buf);
+
+    if (0 == strcmp(Buf, "JPG") ||
+        0 == strcmp(Buf, "WEBP"))
+    {
+        return (int)DialogBoxParam(hInst,
+            MAKEINTRESOURCE(IDD_QUALITY), hDlg, DialogQualityProc, val);
+    }
+
+    return -1;
 }

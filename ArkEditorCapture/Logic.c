@@ -1,68 +1,38 @@
+#define WIN32_LEAN_AND_MEAN 
 #include <Windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <process.h>
 
 #include "Logic.h"
 #include "Process.h"
 #include "Dialog.h"
-#include "resource.h"
 #include "Memory.h"
 #include "InjectDll.h"
 #include "Pipe.h"
+#include "Reg.h"
 #include "Image.h"
 #include "SaveText.h"
-#include "../ArkShot/Declare.h"
+#include "Utility.h"
+#include "resource.h"
 
 static CParam cParam;
-
-int 
-SetMessage(
-    char mode, 
-    int size, 
-    void* buf
-);
-
-int 
-RequestMessage(
-    char mode, 
-    int size, 
-    void* buf
-);
-
-void
-EnableValidControls(
-    HWND hDlg
-);
 
 UINT WINAPI 
 WorkThread(
     LPVOID lpParam
 );
 
-INT_PTR CALLBACK
-QualityDialogProc(
-    HWND hDlg,
-    UINT message,
-    WPARAM wParam,
-    LPARAM lParam
+int
+ResizeToTileSize(
+    long targetSize,
+    long* width,
+    long* height
 );
 
 HWND
 GetUnrealHandle(
-);
-
-Vec2D
-GetEndCoord(
-    Vec2D CoordTo,
-    Vec2D CoordFrom,
-    const float multiplier
-);
-
-int
-ResizeToTileSize(
-    long* width,
-    long* height
 );
 
 int 
@@ -140,29 +110,29 @@ LoadArkEditor(
 }
 
 void
-LoadValue(
+QueryEngineVariable(
 )
 {
     if (NULL == cParam.hDlg)
         return;
 
     char buf[30];
-    FVector vec;
-    FVectorD vecd;
+    Vec3D vec;
+    Vec3DD vecd;
     float fval;
     long lval;
 
     switch (cParam.UEVersion)
     {
         case 4:
-            if (RequestMessage(MODE_GET_XYZ, sizeof(FVector), &vec))
+            if (RequestMessage(MODE_GET_XYZ, sizeof(Vec3D), &vec))
             {
                 SetDlgItemFloat(cParam.hDlg, IDC_EDIT_X1, vec.x);
                 SetDlgItemFloat(cParam.hDlg, IDC_EDIT_Y1, vec.y);
             }
             break;
         case 5:
-            if (RequestMessage(MODE_GET_XYZ, sizeof(FVectorD), &vecd))
+            if (RequestMessage(MODE_GET_XYZ, sizeof(Vec3DD), &vecd))
             {
                 SetDlgItemFloat(cParam.hDlg, IDC_EDIT_X1, (float)vecd.x);
                 SetDlgItemFloat(cParam.hDlg, IDC_EDIT_Y1, (float)vecd.y);
@@ -187,11 +157,12 @@ LoadValue(
 }
 
 int
-OpenProcessProc(
-    HWND hDlg
+OpenArkEditor(
+    void* _hDlg
 )
 {
     char buf[255];
+    const HWND hDlg = _hDlg;
 
     const char* UE4prefix = "UE4Editor";
     const char* UE5prefix = "ShooterGameEditor";
@@ -259,7 +230,9 @@ CloseArkEditor(
 
 int 
 StartCapture(
-    int quality
+    int quality,
+    int mode,
+    void* endcb
 )
 {
     if (0 < cParam.Status)
@@ -268,18 +241,41 @@ StartCapture(
         return TRUE;
     }
 
+    DisableControls();
+
     cParam.Status = 1;
     cParam.quality = quality;
+    cParam.currentMode = mode;
 
-    HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, WorkThread, NULL, 0, NULL);
+    HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, WorkThread, endcb, 0, NULL);
 
-    if (NULL != hThread)
+    if (NULL == hThread)
     {
-        CloseHandle(hThread);
-        return TRUE;
+        EnableControls();
+        return FALSE;
     }
 
-    return FALSE;
+    CloseHandle(hThread);
+    return TRUE;
+}
+
+void
+DisableControls(
+)
+{
+    EnableAllControls(cParam.hDlg, IDC_AAA_START_CTRL, IDC_ZZZ_END_CTRL, FALSE);
+    KillTimer(cParam.hDlg, 1);
+}
+
+void
+EnableControls(
+)
+{
+    SetWindowText(GetDlgItem(cParam.hDlg, IDC_BUTTON_START), "Start Capture");
+    SetTimer(cParam.hDlg, 1, 100, NULL);
+
+    EnableAllControls(cParam.hDlg, IDC_AAA_START_CTRL, IDC_ZZZ_END_CTRL, TRUE);
+    EnableWindow(GetDlgItem(cParam.hDlg, IDC_BUTTON_OPEN), FALSE);
 }
 
 void
@@ -299,13 +295,13 @@ SetButtonAction(
         {
             if (cParam.UEVersion == 4)
             {
-                FVector vec = { 0 };
-                SetMessage(MODE_SET_XY, sizeof(FVector), &vec);
+                Vec3D vec = { 0 };
+                SetMessage(MODE_SET_XY, sizeof(Vec3D), &vec);
             }
             else if (cParam.UEVersion == 5)
             {
-                FVectorD vecd = { 0 };
-                SetMessage(MODE_SET_XY, sizeof(FVectorD), &vecd);
+                Vec3DD vecd = { 0 };
+                SetMessage(MODE_SET_XY, sizeof(Vec3DD), &vecd);
             }
             break;
         }
@@ -363,9 +359,6 @@ SetButtonAction(
             Coord.x += (float)-vpWhf * Zoom;
             Coord.y += (float)-vpHhf * Zoom;
 
-            Coord.x = (float)(long)((Coord.x + 500) / 1000) * 1000;
-            Coord.y = (float)(long)((Coord.y + 500) / 1000) * 1000;
-
             SetDlgItemFloat(cParam.hDlg, IDC_EDIT_X2, Coord.x);
             SetDlgItemFloat(cParam.hDlg, IDC_EDIT_Y2, Coord.y);
 
@@ -373,12 +366,6 @@ SetButtonAction(
 
             From.x = -From.x;
             From.y = -From.y;
-
-            From.x += ((long)From.x % (long)MulZ);
-            From.y += ((long)From.y % (long)MulZ);
-
-            From.x = (float)(long)((From.x + 500) / 1000) * 1000;
-            From.y = (float)(long)((From.y + 500) / 1000) * 1000;
 
             const Vec2D GetCoord = GetEndCoord(
                 Coord,
@@ -399,70 +386,23 @@ SetButtonAction(
     }
 }
 
-int 
-SetMessage(
-    char mode, 
-    int size,
-    void* buf
-)
-{
-    if (size > PIPE_BUF_SIZE)
-        return FALSE;
-
-    char _buf[PIPE_BUF_SIZE] = { 0 };
-
-    _buf[0] = mode;
-
-    if (size > 0)
-        memcpy(_buf + 1, buf, sizeof(char) * size);
-
-    if (FALSE == SendPipeMessage(1 + size, _buf))
-        return FALSE;
-
-    if (FALSE == RecvPipeMessage(1, _buf) || _buf[0] != mode)
-        return FALSE;
-
-    return TRUE;
-}
-
-int 
-RequestMessage(
-    char mode, 
-    int size, 
-    void* buf
-)
-{
-    if (size > PIPE_BUF_SIZE)
-        return FALSE;
-
-    if (FALSE == SendPipeMessage(1, &mode))
-        return FALSE;
-
-    char _buf[PIPE_BUF_SIZE] = { 0 };
-
-    if (FALSE == RecvPipeMessage(1 + size, _buf))
-        return FALSE;
-
-    if (mode != (unsigned char)_buf[0])
-        return FALSE;
-
-    memcpy(buf, _buf + 1, sizeof(char) * size);
-
-    return TRUE;
-}
-
 UINT WINAPI 
 WorkThread(
     LPVOID lpParam
 )
 {
-    HANDLE hProcess = (HANDLE)cParam.hProcess;
-    HWND hDlg = (HWND)cParam.hDlg;
+    const HANDLE hProcess = (HANDLE)cParam.hProcess;
+    const HWND hDlg = (HWND)cParam.hDlg;
+
+    const int mode = cParam.currentMode;
 
     char UEPath[MAX_PATH] = { 0 };
     char BitmapPath[MAX_PATH] = { 0 };
     char SavePath[MAX_PATH] = { 0 };
     char Buf[MAX_PATH];
+
+    if (LOGIC_MODE_PREVIEW != mode)
+        StoreRegistryValue(hDlg);
 
     if (FALSE == RequestMessage(MODE_GET_PATH, MAX_PATH, UEPath))
     {
@@ -493,21 +433,35 @@ WorkThread(
     else if (cParam.UEVersion == 5)
         strcat_s(BitmapPath, sizeof(BitmapPath), "00000.png");
 
-    GetDlgItemText(hDlg, IDC_EDIT_SVPATH, SavePath, sizeof(SavePath));
-
-    if (strlen(SavePath) + 13 >= MAX_PATH) // \AActors.txt
+    if (LOGIC_MODE_PREVIEW != mode)
     {
-        MessageBox(hDlg, "The save path is too long. Please check it.", "Error", MB_ICONEXCLAMATION);
-        goto EXIT_THREAD;
+        GetDlgItemText(hDlg, IDC_EDIT_SVPATH, SavePath, sizeof(SavePath));
+
+        if (strlen(SavePath) + 13 >= MAX_PATH) // \AActors.txt
+        {
+            MessageBox(hDlg, "The save path is too long. Please check it.", "Error", MB_ICONEXCLAMATION);
+            goto EXIT_THREAD;
+        }
+
+        DWORD attributes = GetFileAttributes(SavePath);
+
+        if (INVALID_FILE_ATTRIBUTES == attributes ||
+            0 == (attributes & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            MessageBox(hDlg, "Invalid Save Path.", "Error", MB_ICONEXCLAMATION);
+            goto EXIT_THREAD;
+        }
     }
-
-    DWORD attributes = GetFileAttributes(SavePath);
-
-    if (INVALID_FILE_ATTRIBUTES == attributes ||
-        0 == (attributes & FILE_ATTRIBUTE_DIRECTORY))
+    else
     {
-        MessageBox(hDlg, "Invalid Save Path.", "Error", MB_ICONEXCLAMATION);
-        goto EXIT_THREAD;
+        GetModuleFileName(NULL, SavePath, MAX_PATH);
+        char* ptr = strrchr(SavePath, '\\');
+
+        if (ptr)
+            *ptr = 0;
+
+        strcat_s(SavePath, sizeof(SavePath), PREVIEW_PREFIX);
+        CreateDirectory(SavePath, NULL);
     }
 
     Vec2D Coord_To = {
@@ -559,6 +513,12 @@ WorkThread(
     index = (int)SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETCURSEL, 0, 0);
     SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETLBTEXT, index, (LPARAM)Extension);
 
+    if (LOGIC_MODE_PREVIEW == mode)
+    {
+        strcpy_s(Extension, sizeof(Extension), "BMP");
+        Z_to = Z_from = 0;
+    }
+
     if (0 == strcmp(Extension, "BMP"))
         ExtensionIndex = IMAGE_TYPE_BMP;
     else if (0 == strcmp(Extension, "JPG"))
@@ -581,7 +541,7 @@ WorkThread(
         goto EXIT_THREAD;
     }
 
-    if (FALSE == ResizeToTileSize(&VpWidth, &VpHeight))
+    if (FALSE == ResizeToTileSize(SAVETILESIZE, &VpWidth, &VpHeight))
         goto EXIT_THREAD;
     
     const Vec2D offset = {
@@ -630,50 +590,61 @@ WorkThread(
     EnableWindow(GetDlgItem(hDlg, IDC_BUTTON_START), TRUE);
     SetWindowText(GetDlgItem(hDlg, IDC_BUTTON_START), "Stop");
 
-    long long timeval = GetTickCount64();
-
-    sprintf_s(z_string, sizeof(z_string), "%s\\info_%lld.txt", SavePath, timeval);
-    sprintf_s(zx_string, sizeof(zx_string),
-        "Map Info: \n\n"
-        "left: \t%g\tright: \t%g\n"
-        "top: \t%g\tbottom: \t%g\n\n"
-        "Zoom Min / Max: \t%d / %d\n"
-        "Zoom Value: \t%.2f\n\n"
-        "Width: \t%d\nHeight: \t%d\n\n"
-        "Image Codec: \t%s\nQuality: \t%d",
-        Coord_To.x, Coord_From.x,
-        Coord_To.y, Coord_From.y,
-        Z_to, Z_from,
-        StartZ, 
-        VpWidth, VpHeight,
-        Extension, cParam.quality);
-
-    saveTextToFile(z_string, zx_string, (int)strlen(zx_string));
-
-    strcpy_s(Buf, sizeof(Buf), SavePath);
-    strcat_s(Buf, sizeof(Buf), "\\AActors.txt");
-
-    DeleteFile(Buf);
-
-    WaitCount = 0;
-
-    while (FALSE == SetMessage(MODE_GET_ACTORS, 0, NULL))
+    if (LOGIC_MODE_PREVIEW != mode)
     {
-        if (++WaitCount > 30)
-            break;
+        long long timeval = GetTickCount64();
 
-        Sleep(100);
+        sprintf_s(z_string, sizeof(z_string), "%s\\info_%lld.txt", SavePath, timeval);
+        sprintf_s(zx_string, sizeof(zx_string),
+            "Map Info: \n\n"
+            "left: \t%g\tright: \t%g\n"
+            "top: \t%g\tbottom: \t%g\n\n"
+            "Zoom Min / Max: \t%d / %d\n"
+            "Zoom Value: \t%.2f\n\n"
+            "Width: \t%d\nHeight: \t%d\n\n"
+            "Image Codec: \t%s\nQuality: \t%d",
+            Coord_To.x, Coord_From.x,
+            Coord_To.y, Coord_From.y,
+            Z_to, Z_from,
+            StartZ,
+            VpWidth, VpHeight,
+            Extension, cParam.quality);
+
+        saveTextToFile(z_string, zx_string, (int)strlen(zx_string));
+
+        strcpy_s(Buf, sizeof(Buf), SavePath);
+        strcat_s(Buf, sizeof(Buf), "\\AActors.txt");
+
+        DeleteFile(Buf);
+
+        WaitCount = 0;
+
+        while (FALSE == SetMessage(MODE_GET_ACTORS, 0, NULL))
+        {
+            if (++WaitCount > 30)
+                break;
+
+            Sleep(100);
+        }
+
+        if (WaitCount <= 10)
+        {
+            char Buf2[MAX_PATH];
+
+            strcpy_s(Buf2, sizeof(Buf2), UEPath);
+            strcat_s(Buf2, sizeof(Buf2), "AActors.txt");
+
+            MoveFile(Buf2, Buf);
+        }
     }
 
-    if (WaitCount <= 10)
-    {
-        char Buf2[MAX_PATH];
+    QueryEngineVariable();
 
-        strcpy_s(Buf2, sizeof(Buf2), UEPath);
-        strcat_s(Buf2, sizeof(Buf2), "AActors.txt");
-
-        MoveFile(Buf2, Buf);
-    }
+    Vec3D originalCoord = {
+        GetDlgItemFloat(hDlg, IDC_EDIT_X1),
+        GetDlgItemFloat(hDlg, IDC_EDIT_Y1),
+        GetDlgItemFloat(hDlg, IDC_EDIT_Z1)
+    };
 
     for (long ZoomLvl = 0; ZoomLvl <= Z_from; ++ZoomLvl, Zoom /= 2)
     {
@@ -738,47 +709,38 @@ WorkThread(
 
                 if (GetFileAttributes(zxy_string) == ((DWORD)-1))
                 {
-                    float fval;
-                    int writeBytes = 0;
-
                     const Vec2D rCoord = {
                         StartCoord.x + Increase.x * x,
                         StartCoord.y + Increase.y * y
                     };
 
+                    int writeBytes = 0;
+
                     if (cParam.UEVersion == 4)
                     { 
-                        FVector vec;
+                        Vec5D vec = { 0 };
 
                         vec.x = rCoord.x;
                         vec.y = rCoord.y;
-                        vec.z = 0;
+                        vec.zoom = Zoom;
+                        vec.resval = resValue;
 
-                        memcpy(Buf + 0, &vec, sizeof(FVector));
-                        writeBytes += sizeof(FVector);
+                        memcpy(Buf, &vec, writeBytes = sizeof(Vec5D));
                     }
                     else if (cParam.UEVersion == 5)
                     {
-                        FVectorD vecd;
+                        Vec5DD vecd = { 0 };
 
                         vecd.x = (float)rCoord.x;
                         vecd.y = (float)rCoord.y;
-                        vecd.z = 0;
+                        vecd.zoom = Zoom;
+                        vecd.resval = resValue;
 
-                        memcpy(Buf + 0, &vecd, sizeof(FVectorD));
-                        writeBytes += sizeof(FVectorD);
+                        memcpy(Buf, &vecd, writeBytes = sizeof(Vec5DD));
                     }
                     
                     if (0 == writeBytes)
                         goto EXIT_THREAD;
-
-                    fval = (float)Zoom;
-                    memcpy(Buf + writeBytes, &fval, 4);
-                    writeBytes += sizeof(float);
-
-                    fval = (float)resValue;
-                    memcpy(Buf + writeBytes, &fval, 4);
-                    writeBytes += sizeof(float);
 
                     // synchronize
                     for (int i = 0; i <= 3000; ++i)
@@ -801,7 +763,7 @@ WorkThread(
 
                     while (!SaveImageParts(ExtensionIndex,
                         cParam.quality,
-                        SAVETILESIZE, SAVETILESIZE,
+                        SAVETILESIZE,
                         x, y,
                         cutX, cutY,
                         Extension, BitmapPath, z_string))
@@ -816,17 +778,52 @@ WorkThread(
                     }
 
                     DeleteFile(BitmapPath);
-                    LoadValue();
+                    QueryEngineVariable();
                 }
 
             }
         }
     }
 
+    Vec5D vec = { 0 };
+    Vec5DD vecd = { 0 };
+    int writeBytes = 0;
+
+    if (cParam.UEVersion == 4)
+    {
+        vec.x = originalCoord.x;
+        vec.y = originalCoord.y;
+        vec.zoom = originalCoord.z;
+
+        memcpy(Buf, &vec, writeBytes = sizeof(Vec5D));
+    }
+    else if (cParam.UEVersion == 5)
+    {
+        vecd.x = originalCoord.x;
+        vecd.y = originalCoord.y;
+        vecd.zoom = originalCoord.z;
+
+        memcpy(Buf, &vecd, writeBytes = sizeof(Vec5DD));
+    }
+
+    WaitCount = 0;
+
+    while (FALSE == SetMessage(MODE_SET_XYZZ_CAPTURE, writeBytes, Buf))
+    {
+        if (++WaitCount > 30)
+            break;
+
+        Sleep(100);
+    }
+
 EXIT_THREAD:
 
     cParam.Status = 0;
-    EnableValidControls(hDlg);
+
+    EnableControls();
+
+    if (lpParam)
+        ((void(*)())lpParam)();
 
     return 0;
 }
@@ -838,27 +835,127 @@ StopCapture(
     cParam.Status = 1;
 }
 
-int 
-GetImageQuality(
-    HINSTANCE hInst,
-    HWND hDlg,
-    int val
+int
+ResizeToTileSize(
+    long targetSize,
+    long* width,
+    long* height
 )
 {
-    const int index = (int)SendDlgItemMessage(hDlg,
-        IDC_COMBO_EXTIMG, CB_GETCURSEL, 0, 0);
+    // auto sizing window
 
-    char Buf[255] = { 0 };
-    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETLBTEXT, index, (LPARAM)Buf);
+    POINT sizeViewport = { 0 };
+    POINT prevSIze = { 0 };
+    POINT offset = { 0 };
+    RECT currentSize = { 0 };
+    int cnt = 10;
+    int scnt = 10;
+    int fail = 0;
+    int WaitCount;
 
-    if (0 == strcmp(Buf, "JPG") ||
-        0 == strcmp(Buf, "WEBP"))
+    for (;;)
     {
-        return (int)DialogBoxParam(hInst,
-            MAKEINTRESOURCE(IDD_QUALITY), hDlg, QualityDialogProc, val);
+        WaitCount = 0;
+        Sleep(25 * (cnt < 1 ? 1 : cnt));
+
+        while (!RequestMessage(MODE_GET_WH, sizeof(POINT), &sizeViewport))
+        {
+            if (++WaitCount > 10)
+            {
+                MessageBox(cParam.hDlg,
+                    "Failed to load the viewport rendering size in ARK DevKit.",
+                    "Error", MB_ICONEXCLAMATION);
+                return 0;
+            }
+
+            Sleep(100);
+        }
+
+        if (sizeViewport.x == targetSize &&
+            sizeViewport.y == targetSize)
+        {
+            if (++scnt > 5)
+                break;
+
+            fail = 0;
+            continue;
+        }
+
+        scnt = 0;
+        HWND unrealhWnd = GetUnrealHandle();
+
+        if (NULL == unrealhWnd)
+        {
+            MessageBox(cParam.hDlg,
+                "Failed to get the window handle in ARK DevKit.",
+                "Error", MB_ICONEXCLAMATION);
+            return FALSE;
+        }
+
+        POINT resize;
+        RECT rc;
+
+        GetWindowRect(unrealhWnd, &rc);
+
+        if (rc.left == currentSize.left &&
+            rc.right == currentSize.right &&
+            rc.top == currentSize.top &&
+            rc.bottom == currentSize.bottom)
+        {
+            ++fail;
+        }
+        else
+            fail = 0;
+
+        currentSize = rc;
+
+        const int x_direction = ((targetSize - sizeViewport.x) < 0 && (offset.x < 0)) ||
+            ((targetSize - sizeViewport.x) >= 0 && (offset.x >= 0));
+        const int y_direction = ((targetSize - sizeViewport.y) < 0 && (offset.y < 0)) ||
+            ((targetSize - sizeViewport.y) >= 0 && (offset.y >= 0));
+
+        offset.x = targetSize - sizeViewport.x;
+        offset.y = targetSize - sizeViewport.y;
+
+        if (offset.x / 2 >= 1)
+            offset.x /= 2;
+
+        if (offset.y / 2 >= 1)
+            offset.y /= 2;
+
+        resize.x = rc.right - rc.left + offset.x;
+        resize.y = rc.bottom - rc.top + offset.y;
+
+        if (resize.x < SAVETILESIZE)
+            resize.x = SAVETILESIZE;
+
+        if (resize.y < SAVETILESIZE)
+            resize.y = SAVETILESIZE;
+
+        SetWindowPos(unrealhWnd, NULL, 0, 0, resize.x, resize.y, SWP_NOMOVE | SWP_NOZORDER);
+
+        if ((x_direction && (0 == offset.x || prevSIze.x != sizeViewport.x)) &&
+            (y_direction && (0 == offset.y || prevSIze.y != sizeViewport.y)))
+            --cnt;
+        else
+            ++cnt;
+
+        if (fail >= 5 ||
+            cnt >= 200 || cnt <= -200)
+        {
+            MessageBox(cParam.hDlg,
+                "Failed to automatically adjust the viewport rendering size in ARK DevKit.",
+                "Error", MB_ICONEXCLAMATION);
+            return FALSE;
+        }
+
+        prevSIze = sizeViewport;
     }
 
-    return -1;
+    *width = sizeViewport.x;
+    *height = sizeViewport.y;
+
+    return TRUE;
 }
 
 HWND
@@ -873,141 +970,114 @@ GetUnrealHandle(
     return FindWindowsByPID(pID);
 }
 
-Vec2D
-GetEndCoord(
-    Vec2D CoordTo,
-    Vec2D CoordFrom,
-    const float multiplier
+void
+FetchRegistryValue(
+    void* _hDlg
 )
 {
-    if (CoordFrom.x == 0 || CoordFrom.x < CoordTo.x)
-        CoordFrom.x = CoordTo.x + 1;
+    char Buf[255] = { 0 };
+    const HWND hDlg = (HWND)_hDlg;
 
-    if (CoordFrom.y == 0 || CoordFrom.y < CoordTo.y)
-        CoordFrom.y = CoordTo.y + 1;
+    ReadReg(REG_PATH, "IDC_EDIT_PN", "UE4Editor.exe", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_PN, Buf);
 
-    Vec2D CurrentCoord = CoordTo;
+    ReadReg(REG_PATH, "IDC_EDIT_DLPATH", "", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_DLPATH, Buf);
 
-    for (; CurrentCoord.x <= CoordFrom.x; CurrentCoord.x += multiplier)
-    {
-        if ((long)CurrentCoord.x == (long)CoordFrom.x)
-            break;
-    }
+    ReadReg(REG_PATH, "IDC_EDIT_SVPATH", "C:\\", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_SVPATH, Buf);
 
-    for (; CurrentCoord.y <= CoordFrom.y; CurrentCoord.y += multiplier)
-    {
-        if ((long)CurrentCoord.y == (long)CoordFrom.y)
-            break;
-    }
+    ReadReg(REG_PATH, "IDC_EDIT_X2", "-1000000", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_X2, Buf);
 
-    if (CurrentCoord.x > CoordFrom.x)
-        CoordFrom.x = CurrentCoord.x;
+    ReadReg(REG_PATH, "IDC_EDIT_X3", "1000000", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_X3, Buf);
 
-    if (CurrentCoord.y > CoordFrom.y)
-        CoordFrom.y = CurrentCoord.y;
+    ReadReg(REG_PATH, "IDC_EDIT_Y2", "-1000000", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_Y2, Buf);
 
-    return CoordFrom;
+    ReadReg(REG_PATH, "IDC_EDIT_Y3", "1000000", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_Y3, Buf);
+
+    ReadReg(REG_PATH, "IDC_EDIT_Z2", "12800000", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_Z2, Buf);
+
+    ReadReg(REG_PATH, "IDC_EDIT_Z3", "0", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_Z3, Buf);
+
+    ReadReg(REG_PATH, "IDC_EDIT_Z4", "7", Buf);
+    SetDlgItemText(hDlg, IDC_EDIT_Z4, Buf);
+
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("BMP"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("JPG"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("GIF"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("PNG"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_ADDSTRING, 0, (LPARAM)TEXT("WEBP"));
+
+    ReadReg(REG_PATH, "IDC_COMBO_EXTIMG", "0", Buf);
+    SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_SETCURSEL, atoi(Buf), 0);
+
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("256"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("512"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("1024"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("2048"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("4096"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("8192"));
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_ADDSTRING, 0, (LPARAM)TEXT("16384"));
+
+    ReadReg(REG_PATH, "IDC_COMBO_TILESZ", "0", Buf);
+    SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_SETCURSEL, atoi(Buf), 0);
 }
 
-int
-ResizeToTileSize(
-    long* width,
-    long* height
+void
+StoreRegistryValue(
+    void* _hDlg
 )
 {
-    // auto sizing window
+    char Buf[255] = { 0 };
+    const HWND hDlg = (HWND)_hDlg;
 
-    POINT sizeViewport = { 0 };
-    POINT prevSIze = { 0 };
-    int cnt = 10;
-    int scnt = 0;
-    int WaitCount;
+    GetDlgItemText(hDlg, IDC_EDIT_PN, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_PN", Buf);
 
-    for (;;)
-    {
-        WaitCount = 0;
+    GetDlgItemText(hDlg, IDC_EDIT_DLPATH, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_DLPATH", Buf);
 
-        while (!RequestMessage(MODE_GET_WH, sizeof(POINT), &sizeViewport))
-        {
-            if (++WaitCount > 10)
-            {
-                MessageBox(cParam.hDlg, 
-                    "Failed to load the viewport rendering size in ARK DevKit.", 
-                    "Error", MB_ICONEXCLAMATION);
-                return 0;
-            }
+    GetDlgItemText(hDlg, IDC_EDIT_SVPATH, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_SVPATH", Buf);
 
-            Sleep(100);
-        }
+    GetDlgItemText(hDlg, IDC_EDIT_X2, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_X2", Buf);
 
-        if (sizeViewport.x == SAVETILESIZE &&
-            sizeViewport.y == SAVETILESIZE)
-        {
-            if (++scnt > 5)
-                break;
+    GetDlgItemText(hDlg, IDC_EDIT_X3, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_X3", Buf);
 
-            Sleep(50 * (cnt < 1 ? 1 : cnt));
-            continue;
-        }
+    GetDlgItemText(hDlg, IDC_EDIT_Y2, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_Y2", Buf);
 
-        scnt = 0;
-        HWND unrealhWnd = GetUnrealHandle();
+    GetDlgItemText(hDlg, IDC_EDIT_Y3, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_Y3", Buf);
 
-        if (NULL == unrealhWnd)
-        {
-            MessageBox(cParam.hDlg,
-                "Failed to get the window handle in ARK DevKit.", 
-                "Error", MB_ICONEXCLAMATION);
-            return FALSE;
-        }
+    GetDlgItemText(hDlg, IDC_EDIT_Z2, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_Z2", Buf);
 
-        RECT rc;
-        POINT offset;
-        POINT resize;
+    GetDlgItemText(hDlg, IDC_EDIT_Z3, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_Z3", Buf);
 
-        GetWindowRect(unrealhWnd, &rc);
+    GetDlgItemText(hDlg, IDC_EDIT_Z4, Buf, sizeof(Buf));
+    WriteReg(REG_PATH, "IDC_EDIT_Z4", Buf);
 
-        offset.x = (SAVETILESIZE - sizeViewport.x);
-        offset.y = (SAVETILESIZE - sizeViewport.y);
+    int sel = (int)SendDlgItemMessage(hDlg, IDC_COMBO_EXTIMG, CB_GETCURSEL, 0, 0);
 
-        if (offset.x / 2 >= 1)
-            offset.x /= 2;
+    Buf[0] = (char)sel + '0';
+    Buf[1] = 0;
 
-        if (offset.y / 2 >= 1)
-            offset.y /= 2;
+    WriteReg(REG_PATH, "IDC_COMBO_EXTIMG", Buf);
 
-        resize.x = rc.right - rc.left + offset.x;
-        resize.y = rc.bottom - rc.top + offset.y;
+    sel = (int)SendDlgItemMessage(hDlg, IDC_COMBO_TILESZ, CB_GETCURSEL, 0, 0);
 
-        if (resize.x < 50)
-            resize.x = 50;
+    Buf[0] = (char)sel + '0';
+    Buf[1] = 0;
 
-        if (resize.y < 50)
-            resize.y = 50;
-
-        SetWindowPos(unrealhWnd, NULL, 0, 0, resize.x, resize.y, SWP_NOMOVE | SWP_NOZORDER);
-
-        if ((0 == offset.x || prevSIze.x != sizeViewport.x) &&
-            (0 == offset.y || prevSIze.y != sizeViewport.y))
-            --cnt;
-        else
-            ++cnt;
-
-        if (cnt >= 100 || cnt <= -100)
-        {
-            MessageBox(cParam.hDlg,
-                "Failed to automatically adjust the viewport rendering size in ARK DevKit.",
-                "Error", MB_ICONEXCLAMATION);
-            return FALSE;
-        }
-
-        prevSIze = sizeViewport;
-
-        Sleep(50 * (cnt < 1 ? 1 : cnt));
-    }
-
-    *width = sizeViewport.x;
-    *height = sizeViewport.y;
-
-    return TRUE;
+    WriteReg(REG_PATH, "IDC_COMBO_TILESZ", Buf);
 }

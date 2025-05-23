@@ -46,9 +46,6 @@
     <ClInclude Include="Pipe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MinHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Hook.h">
       <Filter>Header Files</Filter>
     </ClInclude>

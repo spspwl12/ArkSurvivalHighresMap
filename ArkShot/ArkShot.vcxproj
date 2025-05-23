@@ -170,7 +170,6 @@
     <ClInclude Include="Hook.h" />
     <ClInclude Include="Logic.h" />
     <ClInclude Include="Memory.h" />
-    <ClInclude Include="MinHook.h" />
     <ClInclude Include="PE.h" />
     <ClInclude Include="Pipe.h" />
   </ItemGroup>
