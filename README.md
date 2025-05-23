@@ -61,7 +61,7 @@
 2. ARK Modkit(UE4) 를 설치합니다.
    
 ## 타일맵 만들기
-1. Ark Devkit에서 타일맵을 만들 맵을 불러옵니다. ( 많은 시간 소요 )
+1. Ark Devkit에서 타일맵을 만들 맵을 불러옵니다. ( **주의: ArkEditorCapture.exe 를 Open 한 상태에서 새로운 맵을 열면 크래시 오류 뜹니다.** )
    - 공식 맵은 Game/Maps/ 폴더 안에 있고<br>모드 맵은 Game/Mods/ 폴더 안에 있습니다.
    - 여러개의 파일 중, 맵 이름에 가장 근접한 파일을 고릅니다.<br>
        Aberration -> Game/Maps/Aberration/Aberration_P<br>
@@ -82,7 +82,7 @@
    ![Animation8](https://github.com/user-attachments/assets/d7962cb6-20e7-4718-9dde-9c89a30cedad)
 8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.
    ![Animation9](https://github.com/user-attachments/assets/cec65d45-56b1-4248-bc51-bc43945381f6)
-9. ArkEditorCapture.exe를 실행합니다
+9. ArkEditorCapture.exe를 실행합니다.
 10. ArkEditorCapture.exe의 Open 버튼을 누릅니다.
 11. ArkEditorCapture.exe의 ZeroXY와 ZOriginal 버튼을 눌러 맵이 뷰포트에 들어오는지 확인합니다.
     ![Animation10](https://github.com/user-attachments/assets/4ef76d1e-bffb-4803-8779-a4fe1ccf8f07)
@@ -114,14 +114,17 @@
 ### 맵 그림자가 체크무늬처럼 보기 싫을 때 해결 방법
 - 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 Allow Height Field Shadow 검색 후 체크 해제
 
-### 맵에 구름 그림자가 전역에 표시될떄 해결 방법
+### 맵에서 확대 축소 시 물 주변이 깨지는 현상 해결 방법
+- 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 LOD -> LODFalloff 를 Square Root 로 변경
+  
+### 맵에 구름 그림자가 전역에 표시될 때 해결 방법
 - 뷰포트에 표시 -> True Sky 문구 들어간 옵션 체크 해제
 
 ### 물 색깔이 마음에 안 들 때
 - 물 오브젝트 클릭 -> Top Material 변경( 미리보기를 더블클릭해 색깔 사용자 지정할 수도 있음 )
 
 ### 원근 시점으로는 나무, 잔디가 보이는데 상단 시점으로 변경하면 안보이는 이유
-![a46c2180e0feede83d029a95ae5c3d1db3a58793](https://github.com/user-attachments/assets/fd6b97c5-2ab0-45d2-90ed-dcc572d1d77a)
+![image](https://github.com/user-attachments/assets/aefe28fb-92b1-4c51-819d-34e312416fa5)
 - InstancedFoliageActor 오브젝트가 상단으로는 안 보이는데 해당 옵션 ( Foliage Types )은 ARK Devkit에서는 안 보입니다. 해결 불가
 - 아크 전용 에디터로 열지 말고, 언리얼엔진4 에디터로 열면 해결 가능 기대
   
