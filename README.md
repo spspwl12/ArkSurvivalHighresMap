@@ -124,7 +124,7 @@
 - 물 오브젝트 클릭 -> Top Material 변경( 미리보기를 더블클릭해 색깔 사용자 지정할 수도 있음 )
 
 ### 원근 시점으로는 나무, 잔디가 보이는데 상단 시점으로 변경하면 안보이는 이유
-![a46c2180e0feede83d029a95ae5c3d1db3a58793](https://github.com/user-attachments/assets/fd6b97c5-2ab0-45d2-90ed-dcc572d1d77a)
+![image](https://github.com/user-attachments/assets/aefe28fb-92b1-4c51-819d-34e312416fa5)
 - InstancedFoliageActor 오브젝트가 상단으로는 안 보이는데 해당 옵션 ( Foliage Types )은 ARK Devkit에서는 안 보입니다. 해결 불가
 - 아크 전용 에디터로 열지 말고, 언리얼엔진4 에디터로 열면 해결 가능 기대
   
