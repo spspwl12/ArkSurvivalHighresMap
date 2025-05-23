@@ -61,7 +61,7 @@
 2. ARK Modkit(UE4) 를 설치합니다.
    
 ## 타일맵 만들기
-1. Ark Devkit에서 타일맵을 만들 맵을 불러옵니다. ( 많은 시간 소요 )
+1. Ark Devkit에서 타일맵을 만들 맵을 불러옵니다. ( **주의: ArkEditorCapture.exe 를 Open 한 상태에서 새로운 맵을 열면 크래시 오류 뜹니다.** )
    - 공식 맵은 Game/Maps/ 폴더 안에 있고<br>모드 맵은 Game/Mods/ 폴더 안에 있습니다.
    - 여러개의 파일 중, 맵 이름에 가장 근접한 파일을 고릅니다.<br>
        Aberration -> Game/Maps/Aberration/Aberration_P<br>
@@ -82,7 +82,7 @@
    ![Animation8](https://github.com/user-attachments/assets/d7962cb6-20e7-4718-9dde-9c89a30cedad)
 8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.
    ![Animation9](https://github.com/user-attachments/assets/cec65d45-56b1-4248-bc51-bc43945381f6)
-9. ArkEditorCapture.exe를 실행합니다
+9. ArkEditorCapture.exe를 실행합니다.
 10. ArkEditorCapture.exe의 Open 버튼을 누릅니다.
 11. ArkEditorCapture.exe의 ZeroXY와 ZOriginal 버튼을 눌러 맵이 뷰포트에 들어오는지 확인합니다.
     ![Animation10](https://github.com/user-attachments/assets/4ef76d1e-bffb-4803-8779-a4fe1ccf8f07)
