@@ -30,7 +30,7 @@
 - 다양한 이미지 포맷 지원: bmp뿐만 아니라 jpg, gif, png, webp도 지원합니다.
 - 이미지 변환 멀티스레드 지원: 더 빠른 속도로 이미지 변환이 가능합니다.
 - 셀프 언로드 기능: 원격 프로그램이 종료되면, DLL은 알아서 언로드 됩니다.
-- 오브젝트(AActor) 위치 저장: 맵에 있는 오브젝트의 위치를 저장해 마커 등 활용이 가능합니다.
+- 오브젝트(AActor) 위치 저장: 맵에 있는 오브젝트의 위치를 저장해 마커 등 활용할 수 있습니다.
   
 ## 컴파일 및 실행 방법
 1. Visual Studio 2022 를 다운로드 합니다. ( https://visualstudio.microsoft.com/ko/thank-you-downloading-visual-studio/?sku=Community&channel=Release&version=VS2022&source=VSLandingPage&cid=2030&passive=false )
@@ -91,39 +91,42 @@
 
 ## 타일맵 제작 팁 ( ARK Devkit 기준 )
 ### 에픽게임즈 런처 없이 언리얼 실행 방법
-윈도우키 + R 을 입력해 실행창이 뜨면 아래 문장을 입력후 엔터
+윈도우키 + R 을 입력해 실행 창이 뜨면 아래 문장을 입력 후 엔터
 - UE4 : "%ProgramFiles%\Epic Games\ARKEditor\Engine\Binaries\Win64\UE4Editor.exe" ShooterGame/ShooterGame.uproject
 - UE5 : "%ProgramFiles%\Epic Games\ARKDevkit\Engine\Binaries\Win64\ShooterGameEditor.exe"  ShooterGame/ShooterGame.uproject
 
 ### 오브젝트에 사각형 선이 보일 시
 - Alt+G(원근) -> G(게임뷰) 체크 해제 -> Alt+J(상단) 
 
-### 익스팅션 맵 한정 다리에 붙어있는 유리가 검은색으로 표시될 경우
+### 익스팅션 맵 한정 다리에 붙어있는 유리가 검은색으로 표시될 때
 - 왼쪽 위 레벨 창에서 Ext_Proxymeshes 찾은 후 왼쪽 눈 아이콘 클릭해 숨기기
 
-### 맵 밝기가 너무 밝은 경우
+### 맵 밝기가 너무 밝으면
 - DirectionalLight 검색 후 Intensity 값 조절
 - SkyLight 검색 후 끄기
 
 ### 아일랜드 맵 화산 옆 반짝거리는 오브젝트 숨기기
 - 씬 아웃라이너에 BP_VolcanicLightning 검색 후 숨기기 ( 단축키 H )
 
-### 탐험 노트( Explorer Note ) 또는 일부 오브젝트가 안 보일시
+### 탐험 노트( Explorer Note ) 또는 일부 오브젝트가 안 보일 시 해결 방법
 - 모든 리소스 선택 후 (Ctrl+A) 다음 디테일 탭에서 Force Infinite Draw Distance 검색 후 체크해야 일부 오브젝트 보임
 
 ### 맵 그림자가 체크무늬처럼 보기 싫을 때 해결 방법
 - 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 Allow Height Field Shadow 검색 후 체크 해제
 
 ### 맵에서 확대 축소 시 물 주변이 깨지는 현상 해결 방법
-- 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 LOD -> LODFalloff 를 Square Root 로 변경
-  
+- 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 LOD -> LODFalloff 를 Square Root으로 변경
+- 
+### 맵에서 돌, 바위 같은 오브젝트 디테일이 안 좋을 때 해결 방법 
+- 씬 아웃라이너에 ProxyMeshActor 검색 -> 해당하는 오브젝트 Ctrl+A 눌러 전부 다 선택 -> 디테일 탭에서 Min Draw Distance 검색 -> 12000000 으로 수정
+
 ### 맵에 구름 그림자가 전역에 표시될 때 해결 방법
-- 뷰포트에 표시 -> True Sky 문구 들어간 옵션 체크 해제
+- 뷰포트에 표시 -> Have True Sky Active 문구 들어간 옵션 체크 해제
 
 ### 물 색깔이 마음에 안 들 때
 - 물 오브젝트 클릭 -> Top Material 변경( 미리보기를 더블클릭해 색깔 사용자 지정할 수도 있음 )
 
-### 원근 시점으로는 나무, 잔디가 보이는데 상단 시점으로 변경하면 안보이는 이유
+### 원근 시점으로는 나무, 잔디가 보이는데 상단 시점으로 변경하면 안 보이는 이유
 ![image](https://github.com/user-attachments/assets/aefe28fb-92b1-4c51-819d-34e312416fa5)
 - InstancedFoliageActor 오브젝트가 상단으로는 안 보이는데 해당 옵션 ( Foliage Types )은 ARK Devkit에서는 안 보입니다. 해결 불가
 - 아크 전용 에디터로 열지 말고, 언리얼엔진4 에디터로 열면 해결 가능 기대
