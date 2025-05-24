@@ -116,7 +116,7 @@
 
 ### 맵에서 확대 축소 시 물 주변이 깨지는 현상 해결 방법
 - 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 LOD -> LODFalloff 를 Square Root으로 변경
-- 
+
 ### 맵에서 돌, 바위 같은 오브젝트 디테일이 안 좋을 때 해결 방법 
 - 씬 아웃라이너에 ProxyMeshActor 검색 -> 해당하는 오브젝트 Ctrl+A 눌러 전부 다 선택 -> 디테일 탭에서 Min Draw Distance 검색 -> 12000000 으로 수정
 
