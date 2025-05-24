@@ -112,22 +112,22 @@ DlgProc(
                     StartCapture(iQuality, LOGIC_MODE_CAPTURE, NULL);
                     break;
                 }
-                case IDC_BUTTON_ZORI:
-                {
-                    if (FALSE == bEnable &&
-                        FALSE == DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
-                        return (INT_PTR)FALSE;
-
-                    SetButtonAction(0);
-                    break;
-                }
                 case IDC_BUTTON_ZEROXY:
                 {
                     if (FALSE == bEnable &&
                         FALSE == DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
                         return (INT_PTR)FALSE;
 
-                    SetButtonAction(1);
+                    SetButtonAction(BUTTON_MODE_SETZERO);
+                    break;
+                }
+                case IDC_BUTTON_ZORI:
+                {
+                    if (FALSE == bEnable &&
+                        FALSE == DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
+                        return (INT_PTR)FALSE;
+
+                    SetButtonAction(BUTTON_MODE_ORIZOOM);
                     break;
                 }
                 case IDC_BUTTON_AUTOSET:
@@ -136,7 +136,7 @@ DlgProc(
                         FALSE == DlgProc(hDlg, WM_COMMAND, IDC_BUTTON_OPEN, 0))
                         return (INT_PTR)FALSE;
 
-                    SetButtonAction(2);
+                    SetButtonAction(BUTTON_MODE_AUTOSIZE);
                     break;
                 }
                 case IDC_COMBO_EXTIMG:

@@ -7,6 +7,10 @@
 #define LOGIC_MODE_CAPTURE      1
 #define LOGIC_MODE_PREVIEW      2
 
+#define BUTTON_MODE_SETZERO     0
+#define BUTTON_MODE_ORIZOOM     1
+#define BUTTON_MODE_AUTOSIZE    2
+
 #define PREVIEW_PREFIX          "\\.__preview"
 
 typedef struct StartCaptureParameter {

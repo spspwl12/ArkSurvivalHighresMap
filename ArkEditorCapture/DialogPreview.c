@@ -45,13 +45,18 @@ PreviewDialogProc(
         }
         case WM_USER + 0x10000:
         {
+            // SendMessage 또는 PostMessage API로 실행되는 것을 막는다.
+            // Block execution triggered by the SendMessage or PostMessage API.
+            if (NULL != hDlg)
+                return (INT_PTR)FALSE;
+
             bLoaded = TRUE;
 
             char searchPath[MAX_PATH];
             GetModuleFileName(NULL, searchPath, MAX_PATH);
-            char* ptr = strrchr(searchPath, '\\');
+            char* ptr;
 
-            if (ptr)
+            if (NULL != (ptr = strrchr(searchPath, '\\')))
                 *ptr = 0;
 
             sprintf_s(searchPath, sizeof(searchPath), "%s\\%s\\0", searchPath, PREVIEW_PREFIX);
@@ -65,6 +70,8 @@ PreviewDialogProc(
                 return (INT_PTR)FALSE;
             }
 
+            // 임시로 비트맵 공간을 만들어서 미리보기에 표시할 사진을 그린 다음 WM_PAINT 메시지 요청될 때마다 표시하도록 한다.
+            // Create a temporary bitmap space, draw the preview image onto it, and update the display whenever a WM_PAINT message is requested.
             if (NULL == (hBitmap = CreateCompatibleBitmap(hDC, 8192, 8192)))
             {
                 DeleteDC(hdcMem);
@@ -74,12 +81,17 @@ PreviewDialogProc(
 
             SelectObject(hdcMem, hBitmap);
 
+            // WorkThread에 의해 캡처된 이미지를 불러와 HDC에 그린다.
+            // Load the image captured by the WorkThread and render it onto the HDC.
             ListFilesRecursively(hdcMem, searchPath, &BitmapSize);
+
+            // 사용이 끝난 이미지는 삭제한다.
+            // Erase unused images upon completion.
             RemoveDirectory(searchPath);
 
-            ptr = strrchr(searchPath, '\\');
-
-            if (ptr)
+            // 상위 폴더도 삭제한다.
+            // Remove the parent directory.
+            if (NULL != (ptr = strrchr(searchPath, '\\')))
             {
                 *ptr = 0;
                 RemoveDirectory(searchPath);
