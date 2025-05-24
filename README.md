@@ -99,6 +99,9 @@
 ### 오브젝트에 사각형 선이 보일 시
 - Alt+G(원근) -> G(게임뷰) 체크 해제 -> Alt+J(상단) 
 
+### 아일랜드 맵 한정 화산 옆 반짝거리는 오브젝트 숨기기
+- 씬 아웃라이너에 BP_VolcanicLightning 검색 후 숨기기 ( 단축키 H )
+  
 ### 익스팅션 맵 한정 다리에 붙어있는 유리가 검은색으로 표시될 때
 - 왼쪽 위 레벨 창에서 Ext_Proxymeshes 찾은 후 왼쪽 눈 아이콘 클릭해 숨기기
   
@@ -108,9 +111,6 @@
 ### 맵 밝기가 너무 밝으면
 - DirectionalLight 검색 후 Intensity 값 조절
 - SkyLight 검색 후 끄기
-
-### 아일랜드 맵 화산 옆 반짝거리는 오브젝트 숨기기
-- 씬 아웃라이너에 BP_VolcanicLightning 검색 후 숨기기 ( 단축키 H )
 
 ### 탐험 노트( Explorer Note ) 또는 일부 오브젝트가 안 보일 시 해결 방법
 - 모든 리소스 선택 후 (Ctrl+A) 다음 디테일 탭에서 Force Infinite Draw Distance 검색 후 체크해야 일부 오브젝트 보임
