@@ -20,6 +20,7 @@
 ### [Ragnarok](http://138.2.51.230:17875/Ragnarok/)
 ### [ScorchedEarth](http://138.2.51.230:17875/ScorchedEarth/)
 ### [TheCenter](http://138.2.51.230:17875/TheCenter/)
+### [Genesis2](http://138.2.51.230:17875/Genesis2/)
 ### [Fjordur](http://138.2.51.230:17875/Fjordur/)
 [Fjordur_Asgard](http://138.2.51.230:17875/Fjordur_Asgard/)<br>
 [Fjordur_Vanaheim](http://138.2.51.230:17875/Fjordur_Vanaheim/)
