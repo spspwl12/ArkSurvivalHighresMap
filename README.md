@@ -118,7 +118,7 @@
 - 씬 아웃라이너에 Landscape 검색 -> 디테일 탭에서 LOD -> LODFalloff 를 Square Root으로 변경
 
 ### 맵에서 돌, 바위 같은 오브젝트 디테일이 안 좋을 때 해결 방법 
-- 씬 아웃라이너에 ProxyMeshActor 검색 -> 해당하는 오브젝트 Ctrl+A 눌러 전부 다 선택 -> 디테일 탭에서 Min Draw Distance 검색 -> 12000000 으로 수정
+- 씬 아웃라이너에 ProxyMeshActor 검색 -> 해당하는 오브젝트 Ctrl+A 눌러 전부 다 선택 -> 디테일 탭에서 Min Draw Distance 검색 -> 99999999 으로 수정
 
 ### 맵에 구름 그림자가 전역에 표시될 때 해결 방법
 - 뷰포트에 표시 -> Have True Sky Active 문구 들어간 옵션 체크 해제
