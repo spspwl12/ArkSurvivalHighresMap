@@ -40,6 +40,7 @@ DlgProc(
 {
     static int bEnable;
     static HINSTANCE hInst;
+    static HWND hWnd;
     static int iQuality;
 
     switch (message)
@@ -48,6 +49,7 @@ DlgProc(
         {
             FetchRegistryValue(hDlg);
             bEnable = FALSE;
+            hWnd = hDlg;
 
             hInst = (HINSTANCE)lParam;
             iQuality = LoadVal("IDC_EDIT_QULITY", "100");
@@ -155,6 +157,15 @@ DlgProc(
                     break;
             }
             break;
+        }
+        case WM_GET_DLGHWND:
+        {
+            // SendMessage 또는 PostMessage API로 실행되는 것을 막는다.
+            // Block execution triggered by the SendMessage or PostMessage API.
+            if (NULL != hDlg)
+                return (INT_PTR)NULL;
+
+            return (INT_PTR)hWnd;
         }
         case WM_TIMER:
         {

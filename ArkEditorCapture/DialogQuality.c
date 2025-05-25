@@ -25,11 +25,11 @@ DialogQualityProc(
             if (val < 0)
                 val = 0;
 
-            SendDlgItemMessage(hDlg, IDC_EDIT_QULITY, EM_LIMITTEXT, (WPARAM)3, 0);
+            SendDlgItemMessage(hDlg, IDC_EDIT_QULITY, EM_LIMITTEXT, 3, 0);
 
-        	SendDlgItemMessage(hDlg, IDC_SLIDER_QULITY, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 100));
-			SendDlgItemMessage(hDlg, IDC_SLIDER_QULITY, TBM_SETPOS, (WPARAM)TRUE, (LPARAM)val);
-            SendDlgItemMessage(hDlg, IDC_SLIDER_QULITY, TBM_SETTHUMBLENGTH, (WPARAM)20, 0);
+        	SendDlgItemMessage(hDlg, IDC_SLIDER_QULITY, TBM_SETRANGE, TRUE, (LPARAM)MAKELONG(0, 100));
+			SendDlgItemMessage(hDlg, IDC_SLIDER_QULITY, TBM_SETPOS, TRUE, (LPARAM)val);
+            SendDlgItemMessage(hDlg, IDC_SLIDER_QULITY, TBM_SETTHUMBLENGTH, 20, 0);
 
             SetDlgItemInt(hDlg, IDC_EDIT_QULITY, val, FALSE);
 
