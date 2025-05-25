@@ -51,13 +51,19 @@
 9. 컴파일이 완료되면, 프로젝트 폴더안의 Build 폴더에 있는 ArkEditorCapture.exe 를 실행합니다.
 10. ARK DevKit을 실행합니다.
 11. ArkEditorCapture.exe 의 Open 버튼을 누릅니다.<br>
-![image](https://github.com/user-attachments/assets/097c288a-d346-42c5-8974-c24a50e78753)
-12. 타일맵이 저장될 폴더를 선택합니다.
-13. 적당한 타일 사이즈를 선택합니다. ( 크기가 커질수록 고사양 요구 )
-14. StartCapture 버튼을 클릭합니다. ( 뷰포트 렌더링 사이즈가 256 x 256 아닐경우 자동으로 조정합니다. )
-    
+![image](https://github.com/user-attachments/assets/82fdf965-5b21-4f7e-8aa7-2fdfb63e1df2)
+12. 타일맵이 저장될 폴더를 선택합니다.<br>
+![image](https://github.com/user-attachments/assets/d392b565-2b75-4191-9ee9-46f44ed7c034)
+13. 적당한 타일 사이즈를 선택합니다. ( 크기가 커질수록 고사양 요구 )<br>
+![image](https://github.com/user-attachments/assets/ff0aa33a-b818-455f-90fc-4e4a3d408cdd)
+14. StartCapture 버튼을 클릭합니다. ( 뷰포트 렌더링 사이즈가 256 x 256 아닐경우 자동으로 조정합니다. )<br>
+![image](https://github.com/user-attachments/assets/dbf1df2b-6860-4c71-8edb-3ffc52d5a5b0)
+
 ## 작동 화면
-![Animation4](https://github.com/user-attachments/assets/d3f26cb1-082b-49bd-a1eb-9329839bd25b)
+![Animation11](https://github.com/user-attachments/assets/437f6d5e-874a-45fd-9f05-1b8b112f168c)
+![Animation12](https://github.com/user-attachments/assets/ee2c5b1c-f564-49b8-aa5a-c2ffbd9e681d)
+![Animation13](https://github.com/user-attachments/assets/38ca4a79-5744-4f0c-a948-e69f3cb09fa8)
+![Animation14](https://github.com/user-attachments/assets/bf068637-872b-4e86-a2c0-3d58391c3f79)
 
 ## ARK DevKit 설치방법
 1. 에픽게임즈 사이트에 들어가 ( https://store.epicgames.com/ko/p/ark--modkit ) 받기 버튼을 누릅니다. ( 회원가입이 필요한 경우 가입합니다. )
@@ -75,22 +81,31 @@
    ![Animation2](https://github.com/user-attachments/assets/aa63dc5e-3f8a-431d-b407-ab0816eb8f07)
 3. 우측 하단에 **셰이더 컴파일중**이 있으면 기다려야 합니다. ( 매우 오랜 시간 소요 )<br>
    ![Animation3](https://github.com/user-attachments/assets/82002671-a480-4584-b3b7-ad4f1bceb24c)
-4. Alt+4 또는 라이팅 포함을 누릅니다
+4. Alt+4 또는 라이팅 포함을 누릅니다<br>
    ![Animation5](https://github.com/user-attachments/assets/b05246ac-afc8-40a8-8f71-451370fcb882)
-5. Alt+G 또는 원근을 누르고 G 또는 게임 뷰를 눌러 네모난 선이 안 보이도록 합니다. 그리고 Alt+J 또는 상단을 누릅니다. 
+5. Alt+G 또는 원근을 누르고 G 또는 게임 뷰를 눌러 네모난 선이 안 보이도록 합니다. 그리고 Alt+J 또는 상단을 누릅니다. <br>
    ![Animation6](https://github.com/user-attachments/assets/ec763ba5-0bcd-4e56-9ac7-06d6ae0eea05)
-6. 맵이 너무 밝으면 **DirectionalLight**를 검색해 Intensity 값을 조절합니다. ( ※ DirectionalLight가 여러개인경우, 옆에 눈 아이콘을 클릭해 어두워 지는지 확인 후 Intensity 값을 조절합니다. )
+6. 맵이 너무 밝으면 **DirectionalLight**를 검색해 Intensity 값을 조절합니다. ( ※ DirectionalLight가 여러 개인 경우, 옆에 눈 아이콘을 클릭해 어두워지는지 확인 후 Intensity 값을 조절합니다. )<br>
    ![Animation7](https://github.com/user-attachments/assets/cecc2af1-2a48-4d83-a412-1fa65c58040a)
-7. 씬 아웃라이너에서 아무거나 선택한 다음 오른쪽 클릭 후 모두 선택을 누릅니다.
+7. 씬 아웃라이너에서 아무거나 선택한 다음 오른쪽 클릭 후 모두 선택을 누릅니다.<br>
    ![Animation8](https://github.com/user-attachments/assets/d7962cb6-20e7-4718-9dde-9c89a30cedad)
-8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.
+8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.<br>
    ![Animation9](https://github.com/user-attachments/assets/cec65d45-56b1-4248-bc51-bc43945381f6)
 9. ArkEditorCapture.exe를 실행합니다.
-10. ArkEditorCapture.exe의 Open 버튼을 누릅니다.
-11. ArkEditorCapture.exe의 ZeroXY와 ZOriginal 버튼을 눌러 맵이 뷰포트에 들어오는지 확인합니다.
-    ![Animation10](https://github.com/user-attachments/assets/4ef76d1e-bffb-4803-8779-a4fe1ccf8f07)
-12. 맵이 한번에 안보인다면, 스크롤을 조정하여 한번에 보이게끔 설정합니다
-    ![Animation11](https://github.com/user-attachments/assets/ca1c1238-11ed-40bc-beba-1f719ac16815)
+10. ArkEditorCapture.exe의 Open 버튼을 누릅니다.<br>
+   ![image](https://github.com/user-attachments/assets/c994efe4-41ca-4451-8877-637df4c3560e)
+11. ArkEditorCapture.exe의 Set Zero XY 와 Set Original Z 버튼을 누릅니다.<br>
+    ![image](https://github.com/user-attachments/assets/0623b937-1770-4880-a445-71aff75bd2f1)
+12. ArkEditorCapture.exe의 Set Currnet Size 버튼을 누릅니다.<br>
+    ![Animation15](https://github.com/user-attachments/assets/30e5fdf2-2c99-4d94-8ecd-ac03dfa71c6b)
+13. Preview 버튼을 눌러 맵이 가운데에 보이게 설정합니다. 또 화면이 작아서 맵 전체가 안 보이는 경우 다음과 같이 설정합니다.<br>
+    ![Animation16](https://github.com/user-attachments/assets/e475e5d7-3615-4c4d-80b3-85bfa1f2107d)
+14. 설정이 완료되면, X 버튼을 누르거나 Preview 화면을 눌러 닫습니다.<br>
+    ![Animation16](https://github.com/user-attachments/assets/97c4dd56-2520-4eba-8a51-83356e1e8ba5)
+15. Start Capture를 눌러 설정된 좌푯값으로 맵을 캡처합니다.<br>
+    ![Animation18](https://github.com/user-attachments/assets/80ee7f38-d059-424f-bad4-556973e7c97a)
+16. 결과물을 확인합니다.<br>
+    ![{0F54A96E-80F8-4131-B77B-93F14B9DA4AB}](https://github.com/user-attachments/assets/f8699419-b63e-4fcb-ae21-8ae851e8245f)
 
 ## 타일맵 제작 팁 ( ARK Devkit 기준 )
 ### 에픽게임즈 런처 없이 언리얼 실행 방법
