@@ -106,6 +106,7 @@
     ![Animation18](https://github.com/user-attachments/assets/80ee7f38-d059-424f-bad4-556973e7c97a)
 16. 결과물을 확인합니다.<br>
     ![{0F54A96E-80F8-4131-B77B-93F14B9DA4AB}](https://github.com/user-attachments/assets/f8699419-b63e-4fcb-ae21-8ae851e8245f)
+17. 동봉된 CheckMap.html 을 웹서버로 열어서 맵을 확인합니다.
 
 ## 타일맵 제작 팁 ( ARK Devkit 기준 )
 ### 에픽게임즈 런처 없이 언리얼 실행 방법
