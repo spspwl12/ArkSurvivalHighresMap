@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArkEditorCapture", "ArkEditorCapture\ArkEditorCapture.vcxproj", "{D7DA0E6E-0550-4893-BE01-3E7F5B5027FD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{61462E8A-F2E6-39BA-B360-2A7D94789D44} = {61462E8A-F2E6-39BA-B360-2A7D94789D44}
+		{8BCE8A94-E883-4BD6-932B-8DDE199AAD73} = {8BCE8A94-E883-4BD6-932B-8DDE199AAD73}
+		{8FB73622-BCBA-329B-91F7-66FD5C9B086A} = {8FB73622-BCBA-329B-91F7-66FD5C9B086A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArkShot", "ArkShot\ArkShot.vcxproj", "{8BCE8A94-E883-4BD6-932B-8DDE199AAD73}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F142A341-5EE0-442D-A15F-98AE9B48DBAE} = {F142A341-5EE0-442D-A15F-98AE9B48DBAE}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libMinHook", "libMinHook\libMinHook.vcxproj", "{F142A341-5EE0-442D-A15F-98AE9B48DBAE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libwebp", "libwebp\libwebp.vcxproj", "{61462E8A-F2E6-39BA-B360-2A7D94789D44}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libjpeg", "libjpeg\libjpeg.vcxproj", "{8FB73622-BCBA-329B-91F7-66FD5C9B086A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D7DA0E6E-0550-4893-BE01-3E7F5B5027FD}.Debug|x64.ActiveCfg = Debug|x64
+		{D7DA0E6E-0550-4893-BE01-3E7F5B5027FD}.Debug|x64.Build.0 = Debug|x64
+		{D7DA0E6E-0550-4893-BE01-3E7F5B5027FD}.Release|x64.ActiveCfg = Release|x64
+		{D7DA0E6E-0550-4893-BE01-3E7F5B5027FD}.Release|x64.Build.0 = Release|x64
+		{8BCE8A94-E883-4BD6-932B-8DDE199AAD73}.Debug|x64.ActiveCfg = Debug|x64
+		{8BCE8A94-E883-4BD6-932B-8DDE199AAD73}.Debug|x64.Build.0 = Debug|x64
+		{8BCE8A94-E883-4BD6-932B-8DDE199AAD73}.Release|x64.ActiveCfg = Release|x64
+		{8BCE8A94-E883-4BD6-932B-8DDE199AAD73}.Release|x64.Build.0 = Release|x64
+		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Debug|x64.ActiveCfg = Debug|x64
+		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Debug|x64.Build.0 = Debug|x64
+		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Release|x64.ActiveCfg = Release|x64
+		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Release|x64.Build.0 = Release|x64
+		{61462E8A-F2E6-39BA-B360-2A7D94789D44}.Debug|x64.ActiveCfg = Debug|x64
+		{61462E8A-F2E6-39BA-B360-2A7D94789D44}.Debug|x64.Build.0 = Debug|x64
+		{61462E8A-F2E6-39BA-B360-2A7D94789D44}.Release|x64.ActiveCfg = Release|x64
+		{61462E8A-F2E6-39BA-B360-2A7D94789D44}.Release|x64.Build.0 = Release|x64
+		{8FB73622-BCBA-329B-91F7-66FD5C9B086A}.Debug|x64.ActiveCfg = Debug|x64
+		{8FB73622-BCBA-329B-91F7-66FD5C9B086A}.Debug|x64.Build.0 = Debug|x64
+		{8FB73622-BCBA-329B-91F7-66FD5C9B086A}.Release|x64.ActiveCfg = Release|x64
+		{8FB73622-BCBA-329B-91F7-66FD5C9B086A}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B20EA43A-D28F-49FB-902B-6B3E51814B58}
+	EndGlobalSection
+EndGlobal
