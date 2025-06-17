@@ -94,21 +94,18 @@
    ![Animation8](https://github.com/user-attachments/assets/d7962cb6-20e7-4718-9dde-9c89a30cedad)
 8. 디테일에서 **Force Infinite Draw Distance** 를 체크합니다.<br>
    ![Animation9](https://github.com/user-attachments/assets/cec65d45-56b1-4248-bc51-bc43945381f6)
-9. ArkEditorCapture.exe를 실행합니다.
-10. ArkEditorCapture.exe의 Open 버튼을 누릅니다.<br>
-   ![image](https://github.com/user-attachments/assets/c994efe4-41ca-4451-8877-637df4c3560e)
-11. ArkEditorCapture.exe의 Set Zero XY 와 Set Original Z 버튼을 누릅니다.<br>
+9. ArkEditorCapture.exe의 Set Zero XY 와 Set Original Z 버튼을 누릅니다.<br>
     ![image](https://github.com/user-attachments/assets/0623b937-1770-4880-a445-71aff75bd2f1)
-12. ArkEditorCapture.exe의 Set Currnet Size 버튼을 누릅니다.<br>
+10. ArkEditorCapture.exe의 Set Currnet Size 버튼을 누릅니다.<br>
     ![Animation15](https://github.com/user-attachments/assets/30e5fdf2-2c99-4d94-8ecd-ac03dfa71c6b)
-13. Preview 버튼을 눌러 맵이 가운데에 보이게 설정합니다. 또 화면이 작아서 맵 전체가 안 보이는 경우 다음과 같이 설정합니다.<br>
+11. Preview 버튼을 눌러 맵이 가운데에 보이게 설정합니다. 또 화면이 작아서 맵 전체가 안 보이는 경우 다음과 같이 설정합니다.<br>
     ![Animation16](https://github.com/user-attachments/assets/e475e5d7-3615-4c4d-80b3-85bfa1f2107d)
-14. 설정이 완료되면, X 버튼을 누르거나 Preview 화면을 눌러 닫습니다.<br>
-15. Start Capture를 눌러 설정된 좌푯값으로 맵을 캡처합니다.<br>
+12. 설정이 완료되면, X 버튼을 누르거나 Preview 화면을 눌러 닫습니다.<br>
+13. Start Capture를 눌러 설정된 좌푯값으로 맵을 캡처합니다.<br>
     ![Animation18](https://github.com/user-attachments/assets/80ee7f38-d059-424f-bad4-556973e7c97a)
-16. 결과물을 확인합니다.<br>
+14. 결과물을 확인합니다.<br>
     ![{0F54A96E-80F8-4131-B77B-93F14B9DA4AB}](https://github.com/user-attachments/assets/f8699419-b63e-4fcb-ae21-8ae851e8245f)
-17. 동봉된 CheckMap.html 을 웹서버로 열어서 맵을 확인합니다.
+15. 동봉된 CheckMap.html 을 웹서버로 열어서 맵을 확인합니다.
 
 ## 타일맵 제작 팁 ( ARK Devkit 기준 )
 ### 에픽게임즈 런처 없이 언리얼 실행 방법
