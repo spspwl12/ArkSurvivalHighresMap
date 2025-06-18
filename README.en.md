@@ -16,16 +16,16 @@ The following third-party programs are utilized in this project:
 - [**libjpeg**](https://github.com/libjpeg-turbo/libjpeg-turbo) → A static library used for encoding BMP files into JPG format.  
 
 ## Example
-### [Extinction](http://138.2.51.230:17875/Extinction/)
-### [TheIsland](http://138.2.51.230:17875/TheIsland/)
-### [Ragnarok](http://138.2.51.230:17875/Ragnarok/)
-### [ScorchedEarth](http://138.2.51.230:17875/ScorchedEarth/)
-### [TheCenter](http://138.2.51.230:17875/TheCenter/)
-### [Genesis2](http://138.2.51.230:17875/Genesis2/)
-### [CrystalIsles](http://138.2.51.230:17875/CrystalIsles/)
-### [Fjordur](http://138.2.51.230:17875/Fjordur/)
-[Fjordur_Asgard](http://138.2.51.230:17875/Fjordur_Asgard/)<br>
-[Fjordur_Vanaheim](http://138.2.51.230:17875/Fjordur_Vanaheim/)
+### [Extinction](https://138.2.51.230:17875/Extinction/)
+### [TheIsland](https://138.2.51.230:17875/TheIsland/)
+### [Ragnarok](https://138.2.51.230:17875/Ragnarok/)
+### [ScorchedEarth](https://138.2.51.230:17875/ScorchedEarth/)
+### [TheCenter](https://138.2.51.230:17875/TheCenter/)
+### [Genesis2](https://138.2.51.230:17875/Genesis2/)
+### [CrystalIsles](https://138.2.51.230:17875/CrystalIsles/)
+### [Fjordur](https://138.2.51.230:17875/Fjordur/)
+[Fjordur_Asgard](https://138.2.51.230:17875/Fjordur_Asgard/)<br>
+[Fjordur_Vanaheim](https://138.2.51.230:17875/Fjordur_Vanaheim/)
 
 ## Features
 - **Sends Data Using Pipes**: The injected DLL communicates with the main program.  
