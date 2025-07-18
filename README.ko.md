@@ -16,16 +16,16 @@
 - [**libjpeg**](https://github.com/libjpeg-turbo/libjpeg-turbo) → 정적 라이브러리, bmp 파일을 jpg 확장자로 인코딩할 때 쓰입니다.<br>
 
 ## 미리보기
-### [Extinction](https://138.2.51.230:17875/Extinction/)
-### [TheIsland](https://138.2.51.230:17875/TheIsland/)
-### [Ragnarok](https://138.2.51.230:17875/Ragnarok/)
-### [ScorchedEarth](https://138.2.51.230:17875/ScorchedEarth/)
-### [TheCenter](https://138.2.51.230:17875/TheCenter/)
-### [Genesis2](https://138.2.51.230:17875/Genesis2/)
-### [CrystalIsles](https://138.2.51.230:17875/CrystalIsles/)
-### [Fjordur](https://138.2.51.230:17875/Fjordur/)
-[Fjordur_Asgard](https://138.2.51.230:17875/Fjordur_Asgard/)<br>
-[Fjordur_Vanaheim](https://138.2.51.230:17875/Fjordur_Vanaheim/)
+### [Extinction](https://jfkskw.duckdns.org:17875/Extinction/)
+### [TheIsland](https://jfkskw.duckdns.org:17875/TheIsland/)
+### [Ragnarok](https://jfkskw.duckdns.org:17875/Ragnarok/)
+### [ScorchedEarth](https://jfkskw.duckdns.org:17875/ScorchedEarth/)
+### [TheCenter](https://jfkskw.duckdns.org:17875/TheCenter/)
+### [Genesis2](https://jfkskw.duckdns.org:17875/Genesis2/)
+### [CrystalIsles](https://jfkskw.duckdns.org:17875/CrystalIsles/)
+### [Fjordur](https://jfkskw.duckdns.org:17875/Fjordur/)
+[Fjordur_Asgard](https://jfkskw.duckdns.org:17875/Fjordur_Asgard/)<br>
+[Fjordur_Vanaheim](https://jfkskw.duckdns.org:17875/Fjordur_Vanaheim/)
 
 ## 주요 특징
 - 파이프 통신: 인젝션 된 DLL과 파이프 통신을 해 데이터를 주고받습니다.
