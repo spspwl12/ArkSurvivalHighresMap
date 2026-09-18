@@ -20,12 +20,7 @@ The following third-party programs are utilized in this project:
 ### [TheIsland](https://jfkskw.duckdns.org:17875/TheIsland/)
 ### [Ragnarok](https://jfkskw.duckdns.org:17875/Ragnarok/)
 ### [ScorchedEarth](https://jfkskw.duckdns.org:17875/ScorchedEarth/)
-### [TheCenter](https://jfkskw.duckdns.org:17875/TheCenter/)
 ### [Genesis2](https://jfkskw.duckdns.org:17875/Genesis2/)
-### [CrystalIsles](https://jfkskw.duckdns.org:17875/CrystalIsles/)
-### [Fjordur](https://jfkskw.duckdns.org:17875/Fjordur/)
-[Fjordur_Asgard](https://jfkskw.duckdns.org:17875/Fjordur_Asgard/)<br>
-[Fjordur_Vanaheim](https://jfkskw.duckdns.org:17875/Fjordur_Vanaheim/)
 
 ## Features
 - **Sends Data Using Pipes**: The injected DLL communicates with the main program.  
